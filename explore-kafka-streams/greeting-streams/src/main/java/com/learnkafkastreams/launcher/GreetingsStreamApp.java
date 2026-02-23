@@ -3,6 +3,12 @@ package com.learnkafkastreams.launcher;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.streams.KafkaStreams;
+import org.apache.kafka.streams.StreamsConfig;
+import org.apache.kafka.streams.Topology;
+
+import com.learnkafkastreams.topology.GreetingsTopology;
 
 import java.util.List;
 import java.util.Properties;
@@ -13,6 +19,23 @@ public class GreetingsStreamApp {
 
     public static void main(String[] args) {
 
+        Properties properties = new Properties();
+        properties.put(StreamsConfig.APPLICATION_ID_CONFIG, "greetings-app");
+        properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+
+        createTopics(properties, List.of(GreetingsTopology.GREETINGS, GreetingsTopology.GREETINGS_UPPERCASE));
+
+        Topology greetingTopology = GreetingsTopology.buildTopology();
+        KafkaStreams kafkaStreams = new KafkaStreams(greetingTopology, properties);
+        Runtime.getRuntime().addShutdownHook(new Thread(kafkaStreams::close));
+
+        try {
+            kafkaStreams.start();
+        } catch (Exception e) {
+            log.error("Exception in starting stream: {}", e.getMessage(), e);
+        }
+        
 
     }
 
