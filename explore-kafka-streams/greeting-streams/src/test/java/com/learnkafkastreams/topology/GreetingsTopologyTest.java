@@ -7,9 +7,7 @@ import org.apache.kafka.streams.TopologyTestDriver;
 
 class GreetingsTopologyTest {
 
-    TopologyTestDriver topologyTestDriver = null;
-    TestInputTopic<String, Greeting> inputTopic = null;
-    TestOutputTopic<String, Greeting> outputTopic = null;
-
-
+  TopologyTestDriver topologyTestDriver = null;
+  TestInputTopic<String, Greeting> inputTopic = null;
+  TestOutputTopic<String, Greeting> outputTopic = null;
 }
