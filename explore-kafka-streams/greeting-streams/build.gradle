@@ -1,10 +1,17 @@
 plugins {
     id 'java'
     id "io.freefair.lombok" version "6.5.1"
+    id 'com.diffplug.spotless' version '6.11.0'
 }
 
 group 'com.learnkafkastreams'
 version 'unspecified'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
 
 repositories {
     mavenCentral()
@@ -32,6 +39,16 @@ dependencies {
 
 }
 
+
 test {
     useJUnitPlatform()
+}
+
+spotless {
+    java {
+        googleJavaFormat('1.17.0')  // 支持 Java 17
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
 }
