@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'application'
     id "io.freefair.lombok" version "6.5.1"
     id 'com.diffplug.spotless' version '6.11.0'
 }
@@ -11,6 +12,10 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
     }
+}
+
+application {
+    mainClass = 'com.learnkafkastreams.launcher.GreetingsStreamApp'
 }
 
 repositories {
@@ -46,7 +51,7 @@ test {
 
 spotless {
     java {
-        googleJavaFormat('1.17.0')  // 支持 Java 17
+        googleJavaFormat('1.22.0')
         removeUnusedImports()
         trimTrailingWhitespace()
         endWithNewline()
