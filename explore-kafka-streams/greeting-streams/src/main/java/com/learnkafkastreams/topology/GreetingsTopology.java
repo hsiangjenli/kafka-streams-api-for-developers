@@ -22,7 +22,9 @@ public class GreetingsTopology {
     greetingStream.print(Printed.<String, String>toSysOut().withLabel("greetingStream"));
 
     KStream<String, String> modifiedStream =
-        greetingStream.mapValues((readOnlyKey, value) -> value.toUpperCase());
+        greetingStream
+        .filter((key, value) -> value.length() > 5) // filter, filterNot
+        .mapValues((readOnlyKey, value) -> value.toUpperCase());
     modifiedStream.print(Printed.<String, String>toSysOut().withLabel("modifiedStream"));
 
     modifiedStream.to(GREETINGS_UPPERCASE, Produced.with(Serdes.String(), Serdes.String()));
