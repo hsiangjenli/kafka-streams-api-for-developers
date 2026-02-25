@@ -7,7 +7,6 @@ import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Printed;
-import org.apache.kafka.streams.kstream.Produced;
 
 @Slf4j
 public class GreetingsTopology {
@@ -35,7 +34,7 @@ public class GreetingsTopology {
         mergedStream.mapValues((readOnlyKey, value) -> value.toUpperCase());
     modifiedStream.print(Printed.<String, String>toSysOut().withLabel("modifiedStream"));
 
-    modifiedStream.to(GREETINGS_UPPERCASE, Produced.with(Serdes.String(), Serdes.String()));
+    modifiedStream.to(GREETINGS_UPPERCASE);
 
     return streamsBuilder.build();
   }
