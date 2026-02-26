@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'application'
     id "io.freefair.lombok" version "6.5.1"
     id 'com.diffplug.spotless' version '6.11.0'
 
@@ -8,16 +9,20 @@ plugins {
 group 'com.learnkafkastreams'
 version 'unspecified'
 
-repositories {
-    mavenCentral()
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+application {
+    mainClass = 'com.learnkafkastreams.OrdersKafkaStreamApp'
+}
 
-
-
+repositories {
+    mavenCentral()
+}
 
 dependencies {
 
