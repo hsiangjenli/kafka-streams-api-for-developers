@@ -32,7 +32,8 @@ public class GreetingsTopology {
 
     modifiedStream.print(Printed.<String, Greeting>toSysOut().withLabel("modifiedStream"));
     modifiedStream.to(
-        GREETINGS_UPPERCASE, Produced.with(Serdes.String(), SerdesFactory.greetingSerdes()));
+        GREETINGS_UPPERCASE,
+        Produced.with(Serdes.String(), SerdesFactory.greetingSerdesGenerics()));
 
     return streamsBuilder.build();
   }
@@ -52,10 +53,11 @@ public class GreetingsTopology {
 
     KStream<String, Greeting> greetingStream =
         streamsBuilder.stream(
-            GREETINGS, Consumed.with(Serdes.String(), SerdesFactory.greetingSerdes()));
+            GREETINGS, Consumed.with(Serdes.String(), SerdesFactory.greetingSerdesGenerics()));
     KStream<String, Greeting> greetingSpanishStream =
         streamsBuilder.stream(
-            GREETINGS_SPANISH, Consumed.with(Serdes.String(), SerdesFactory.greetingSerdes()));
+            GREETINGS_SPANISH,
+            Consumed.with(Serdes.String(), SerdesFactory.greetingSerdesGenerics()));
 
     // merge 兩個 stream
     KStream<String, Greeting> mergedStream = greetingStream.merge(greetingSpanishStream);
