@@ -2,6 +2,7 @@ package com.learnkafkastreams.topology;
 
 import com.learnkafkastreams.domain.Order;
 import com.learnkafkastreams.domain.OrderType;
+import com.learnkafkastreams.domain.Revenue;
 import com.learnkafkastreams.serde.SerdesFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serdes;
@@ -14,6 +15,7 @@ import org.apache.kafka.streams.kstream.Named;
 import org.apache.kafka.streams.kstream.Predicate;
 import org.apache.kafka.streams.kstream.Printed;
 import org.apache.kafka.streams.kstream.Produced;
+import org.apache.kafka.streams.kstream.ValueMapper;
 
 @Slf4j
 public class OrdersTopology {
@@ -30,6 +32,9 @@ public class OrdersTopology {
     Predicate<String, Order> restaurnatPredicate =
         (key, order) -> order.orderType().equals(OrderType.RESTAURANT);
 
+    ValueMapper<Order, Revenue> revenueMapper =
+        order -> new Revenue(order.locationId(), order.finalAmount());
+
     StreamsBuilder streamsBuilder = new StreamsBuilder();
     KStream<String, Order> orderStream =
         streamsBuilder.stream(ORDERS, Consumed.with(Serdes.String(), SerdesFactory.orderSerde()));
@@ -42,8 +47,11 @@ public class OrdersTopology {
             generalPredicate,
             Branched.withConsumer(
                 generalOrderStream -> {
-                  generalOrderStream.to(
-                      GENERAL_ORDERs, Produced.with(Serdes.String(), SerdesFactory.orderSerde()));
+                  generalOrderStream
+                      .mapValues((readyOnlyKey, value) -> revenueMapper.apply(value))
+                      .to(
+                          GENERAL_ORDERs,
+                          Produced.with(Serdes.String(), SerdesFactory.revenueSerde()));
                   generalOrderStream.print(
                       Printed.<String, Order>toSysOut().withLabel("generalStream"));
                 }))
@@ -51,9 +59,11 @@ public class OrdersTopology {
             restaurnatPredicate,
             Branched.withConsumer(
                 restaurantOrderStream -> {
-                  restaurantOrderStream.to(
-                      RESTAURANT_OEDERS,
-                      Produced.with(Serdes.String(), SerdesFactory.orderSerde()));
+                  restaurantOrderStream
+                      .mapValues((readyOnlyKey, value) -> revenueMapper.apply(value))
+                      .to(
+                          RESTAURANT_OEDERS,
+                          Produced.with(Serdes.String(), SerdesFactory.revenueSerde()));
                   restaurantOrderStream.print(
                       Printed.<String, Order>toSysOut().withLabel("restaurnatStream"));
                 }));
