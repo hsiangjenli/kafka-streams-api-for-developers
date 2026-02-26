@@ -27,7 +27,7 @@ public class OrdersTopology {
 
     Predicate<String, Order> generalPredicate =
         (key, order) -> order.orderType().equals(OrderType.GENERAL);
-    Predicate<String, Order> restaurnatPreidcate =
+    Predicate<String, Order> restaurnatPredicate =
         (key, order) -> order.orderType().equals(OrderType.RESTAURANT);
 
     StreamsBuilder streamsBuilder = new StreamsBuilder();
@@ -48,7 +48,7 @@ public class OrdersTopology {
                       Printed.<String, Order>toSysOut().withLabel("generalStream"));
                 }))
         .branch(
-            generalPredicate,
+            restaurnatPredicate,
             Branched.withConsumer(
                 restaurantOrderStream -> {
                   restaurantOrderStream.to(
