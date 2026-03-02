@@ -7,21 +7,20 @@ import org.apache.kafka.common.serialization.Serdes;
 
 public class SerdesFactory {
 
+  public static Serde<AlphabetWordAggregate> alphabetWordAggregate() {
 
-    public static Serde<AlphabetWordAggregate> alphabetWordAggregate() {
+    JsonSerializer<AlphabetWordAggregate> jsonSerializer = new JsonSerializer<>();
 
-        JsonSerializer<AlphabetWordAggregate> jsonSerializer = new JsonSerializer<>();
+    JsonDeserializer<AlphabetWordAggregate> jsonDeSerializer =
+        new JsonDeserializer<>(AlphabetWordAggregate.class);
+    return Serdes.serdeFrom(jsonSerializer, jsonDeSerializer);
+  }
 
-        JsonDeserializer<AlphabetWordAggregate> jsonDeSerializer = new JsonDeserializer<>(AlphabetWordAggregate.class);
-        return  Serdes.serdeFrom(jsonSerializer, jsonDeSerializer);
-    }
+  public static Serde<Alphabet> alphabet() {
 
+    JsonSerializer<Alphabet> jsonSerializer = new JsonSerializer<>();
 
-    public static Serde<Alphabet> alphabet() {
-
-        JsonSerializer<Alphabet> jsonSerializer = new JsonSerializer<>();
-
-        JsonDeserializer<Alphabet> jsonDeSerializer = new JsonDeserializer<>(Alphabet.class);
-        return  Serdes.serdeFrom(jsonSerializer, jsonDeSerializer);
-    }
+    JsonDeserializer<Alphabet> jsonDeSerializer = new JsonDeserializer<>(Alphabet.class);
+    return Serdes.serdeFrom(jsonSerializer, jsonDeSerializer);
+  }
 }

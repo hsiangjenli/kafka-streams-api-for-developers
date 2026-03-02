@@ -1,34 +1,23 @@
 package com.learnkafkastreams.domain;
 
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.HashSet;
 import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public record AlphabetWordAggregate(String key,
-                                    Set<String> valueList,
-                                    int runningCount) {
+public record AlphabetWordAggregate(String key, Set<String> valueList, int runningCount) {
 
+  public AlphabetWordAggregate() {
+    this("", new HashSet<>(), 0);
+  }
 
-    public AlphabetWordAggregate() {
-       this("", new HashSet<>(), 0);
-    }
+  public AlphabetWordAggregate updateNewEvents(String key, String neVwalue) {
 
+    return null;
+  }
 
-    public AlphabetWordAggregate updateNewEvents(String key, String neVwalue){
+  public static void main(String[] args) {
 
-        return null;
-    }
-
-
-    public static void main(String[] args) {
-
-
-        var al =new AlphabetWordAggregate();
-
-    }
-
+    var al = new AlphabetWordAggregate();
+  }
 }
-
-
