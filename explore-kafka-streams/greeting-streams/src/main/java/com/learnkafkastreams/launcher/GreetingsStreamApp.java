@@ -2,6 +2,7 @@ package com.learnkafkastreams.launcher;
 
 import com.learnkafkastreams.exceptionhandler.StreamDeserializationExceptionHandler;
 import com.learnkafkastreams.exceptionhandler.StreamsProcessorCustomErrorHandler;
+import com.learnkafkastreams.exceptionhandler.StreamsSerializationExceptionHandler;
 import com.learnkafkastreams.topology.GreetingsTopology;
 import java.util.List;
 import java.util.Properties;
@@ -27,6 +28,9 @@ public class GreetingsStreamApp {
     properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.StringSerde.class);
     properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.StringSerde.class);
     properties.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, "2");
+    properties.put(
+        StreamsConfig.DEFAULT_PRODUCTION_EXCEPTION_HANDLER_CLASS_CONFIG,
+        StreamsSerializationExceptionHandler.class);
     properties.put(
         StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG,
         StreamDeserializationExceptionHandler.class);
