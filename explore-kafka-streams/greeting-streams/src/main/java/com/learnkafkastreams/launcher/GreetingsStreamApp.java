@@ -24,6 +24,7 @@ public class GreetingsStreamApp {
     properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
     properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.StringSerde.class);
     properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.StringSerde.class);
+    properties.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, "2");
 
     createTopics(
         properties,
