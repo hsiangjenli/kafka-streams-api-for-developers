@@ -25,10 +25,8 @@ public class GreetingsTopology {
 
     // KStream<String, String> mergedStream = getStringGreetingKStream(streamsBuilder);
     KStream<String, Greeting> mergedStream = getCustomGreetingKStream(streamsBuilder);
-    KStream<String, Greeting> modifiedStream =
-        mergedStream.mapValues(
-            (readOnlyKey, value) ->
-                new Greeting(value.getMessage().toUpperCase(), value.getTimeStamp()));
+    // KStream<String, Greeting> modifiedStream = exploreOperators(mergedStream);
+    KStream<String, Greeting> modifiedStream = exploreErrors(mergedStream);
 
     modifiedStream.print(Printed.<String, Greeting>toSysOut().withLabel("modifiedStream"));
     modifiedStream.to(
@@ -36,6 +34,32 @@ public class GreetingsTopology {
         Produced.with(Serdes.String(), SerdesFactory.greetingSerdesGenerics()));
 
     return streamsBuilder.build();
+  }
+
+  private static KStream<String, Greeting> exploreErrors(KStream<String, Greeting> mergedStream) {
+    return mergedStream
+        .mapValues(
+            (readOnlyKey, value) -> {
+              if (value.getMessage().equals("Transient Error")) {
+                try {
+                  throw new IllegalStateException(value.getMessage());
+                } catch (Exception e) {
+                  log.error("Exception in exploreErrors : {}", e.getMessage(), e);
+                  return null;
+                }
+              }
+              return new Greeting(value.getMessage().toUpperCase(), value.getTimeStamp());
+            })
+        .filter((key, value) -> key != null && value != null);
+  }
+
+  private static KStream<String, Greeting> exploreOperators(
+      KStream<String, Greeting> mergedStream) {
+    KStream<String, Greeting> modifiedStream =
+        mergedStream.mapValues(
+            (readOnlyKey, value) ->
+                new Greeting(value.getMessage().toUpperCase(), value.getTimeStamp()));
+    return modifiedStream;
   }
 
   public static KStream<String, String> getStringGreetingKStream(StreamsBuilder streamsBuilder) {

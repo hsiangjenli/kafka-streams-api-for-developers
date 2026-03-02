@@ -1,6 +1,7 @@
 package com.learnkafkastreams.launcher;
 
 import com.learnkafkastreams.exceptionhandler.StreamDeserializationExceptionHandler;
+import com.learnkafkastreams.exceptionhandler.StreamsProcessorCustomErrorHandler;
 import com.learnkafkastreams.topology.GreetingsTopology;
 import java.util.List;
 import java.util.Properties;
@@ -39,6 +40,7 @@ public class GreetingsStreamApp {
 
     Topology greetingTopology = GreetingsTopology.buildTopology();
     KafkaStreams kafkaStreams = new KafkaStreams(greetingTopology, properties);
+    kafkaStreams.setUncaughtExceptionHandler(new StreamsProcessorCustomErrorHandler());
     Runtime.getRuntime().addShutdownHook(new Thread(kafkaStreams::close));
 
     try {
