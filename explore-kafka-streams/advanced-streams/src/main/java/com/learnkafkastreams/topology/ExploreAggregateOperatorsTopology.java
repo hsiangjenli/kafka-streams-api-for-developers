@@ -1,10 +1,14 @@
 package com.learnkafkastreams.topology;
 
+import com.learnkafkastreams.domain.AlphabetWordAggregate;
+import com.learnkafkastreams.serdes.SerdesFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.kstream.*;
+import org.apache.kafka.streams.state.KeyValueStore;
 
 @Slf4j
 public class ExploreAggregateOperatorsTopology {
@@ -35,7 +39,8 @@ public class ExploreAggregateOperatorsTopology {
     // Serdes.String()));
 
     // exploreCount(groupedStream);
-    exploreReduce(groupedStream);
+    // exploreReduce(groupedStream);
+    exploreAggregate(groupedStream);
 
     return streamsBuilder.build();
   }
@@ -56,5 +61,25 @@ public class ExploreAggregateOperatorsTopology {
             });
 
     reducedStream.toStream().print(Printed.<String, String>toSysOut().withLabel("reduced-words"));
+  }
+
+  public static void exploreAggregate(KGroupedStream<String, String> groupedStream) {
+
+    Initializer<AlphabetWordAggregate> alphabetWordAggregateInitializer =
+        AlphabetWordAggregate::new;
+    Aggregator<String, String, AlphabetWordAggregate> aggregator =
+        (key, value, aggregate) -> aggregate.updateNewEvents(key, value);
+
+    KTable<String, AlphabetWordAggregate> aggregatedStream =
+        groupedStream.aggregate(
+            alphabetWordAggregateInitializer,
+            aggregator,
+            Materialized.<String, AlphabetWordAggregate, KeyValueStore<Bytes, byte[]>>as(
+                    "aggregated-store")
+                .withKeySerde(Serdes.String())
+                .withValueSerde(SerdesFactory.alphabetWordAggregate()));
+    aggregatedStream
+        .toStream()
+        .print(Printed.<String, AlphabetWordAggregate>toSysOut().withLabel("aggregated-words"));
   }
 }
