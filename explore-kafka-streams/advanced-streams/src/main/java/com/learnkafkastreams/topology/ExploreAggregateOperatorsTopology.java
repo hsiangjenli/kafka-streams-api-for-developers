@@ -17,8 +17,22 @@ public class ExploreAggregateOperatorsTopology {
     KStream<String, String> inputStream =
         streamsBuilder.stream(AGGREGATE, Consumed.with(Serdes.String(), Serdes.String()));
     inputStream.print(Printed.<String, String>toSysOut().withLabel(AGGREGATE));
+
+    // 計算每個 key 底下的數量
+    // [words-count-per-alphabet]: A, 9
+    // [words-count-per-alphabet]: B, 6
+    // KGroupedStream<String, String> groupedStream =
+    //     inputStream.groupByKey(Grouped.with(Serdes.String(), Serdes.String()));
+
+    // 計算每個字出現的次數
+    // [words-count-per-alphabet]: Apple, 2
+    // [words-count-per-alphabet]: Alligator, 2
+    // [words-count-per-alphabet]: Ambulance, 2
+    // [words-count-per-alphabet]: Bus, 2
+    // [words-count-per-alphabet]: Baby, 2
     KGroupedStream<String, String> groupedStream =
-        inputStream.groupByKey(Grouped.with(Serdes.String(), Serdes.String()));
+        inputStream.groupBy((key, value) -> value, Grouped.with(Serdes.String(), Serdes.String()));
+
     exploreCount(groupedStream);
 
     return streamsBuilder.build();
