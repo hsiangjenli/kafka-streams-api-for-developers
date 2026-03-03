@@ -38,15 +38,16 @@ public class ExploreAggregateOperatorsTopology {
     //     inputStream.groupBy((key, value) -> value, Grouped.with(Serdes.String(),
     // Serdes.String()));
 
-    // exploreCount(groupedStream);
+    exploreCount(groupedStream);
     // exploreReduce(groupedStream);
-    exploreAggregate(groupedStream);
+    // exploreAggregate(groupedStream);
 
     return streamsBuilder.build();
   }
 
   public static void exploreCount(KGroupedStream<String, String> groupedStream) {
-    KTable<String, Long> countByAlphabet = groupedStream.count(Named.as("count-per-alphabet"));
+    KTable<String, Long> countByAlphabet =
+        groupedStream.count(Named.as("count-per-alphabet"), Materialized.as("count-per-alphabet"));
     countByAlphabet
         .toStream()
         .print(Printed.<String, Long>toSysOut().withLabel("words-count-per-alphabet"));
@@ -58,7 +59,10 @@ public class ExploreAggregateOperatorsTopology {
             (value1, value2) -> {
               log.info("value 1 : {}, value 2 : {}", value1, value2);
               return value1.toUpperCase() + "-" + value2.toUpperCase();
-            });
+            },
+            Materialized.<String, String, KeyValueStore<Bytes, byte[]>>as("reduced-words")
+                .withKeySerde(Serdes.String())
+                .withValueSerde(Serdes.String()));
 
     reducedStream.toStream().print(Printed.<String, String>toSysOut().withLabel("reduced-words"));
   }
