@@ -28,8 +28,8 @@ public class OrdersKafkaStreamApp {
         config,
         List.of(
             OrdersTopology.ORDERS,
-            OrdersTopology.GENERAL_ORDERs,
-            OrdersTopology.RESTAURANT_OEDERS));
+            OrdersTopology.GENERAL_ORDERS,
+            OrdersTopology.RESTAURANT_ORDERS));
 
     // Create an instance of KafkaStreams
     var kafkaStreams = new KafkaStreams(topology, config);
