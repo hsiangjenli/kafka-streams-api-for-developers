@@ -16,7 +16,8 @@ public class ExploreJoinsOperatorsTopology {
   public static Topology build() {
     StreamsBuilder streamsBuilder = new StreamsBuilder();
 
-    joinStreamWithKTable(streamsBuilder);
+    // joinStreamWithKTable(streamsBuilder);
+    joinStreamWithGlobalKTable(streamsBuilder);
 
     return streamsBuilder.build();
   }
@@ -40,6 +41,30 @@ public class ExploreJoinsOperatorsTopology {
 
     KStream<String, Alphabet> joinedKStream =
         alphabetAbbreviation.join(alphabetKTable, valueJoiner);
+    joinedKStream.print(
+        Printed.<String, Alphabet>toSysOut().withLabel("alphabet-with-abbrevation"));
+  }
+
+  private static void joinStreamWithGlobalKTable(StreamsBuilder streamsBuilder) {
+
+    KStream<String, String> alphabetAbbreviation =
+        streamsBuilder.stream(
+            ALPHABETS_ABBREVATIONS, Consumed.with(Serdes.String(), Serdes.String()));
+    alphabetAbbreviation.print(
+        Printed.<String, String>toSysOut().withLabel(ALPHABETS_ABBREVATIONS));
+
+    GlobalKTable<String, String> alphabetKTable =
+        streamsBuilder.globalTable(
+            ALPHABETS,
+            Consumed.with(Serdes.String(), Serdes.String()),
+            Materialized.as("alphabets-store"));
+    // alphabetKTable.toStream().print(Printed.<String, String>toSysOut().withLabel(ALPHABETS));
+
+    ValueJoiner<String, String, Alphabet> valueJoiner = Alphabet::new;
+    KeyValueMapper<String, String, String> keyValueMapper = (leftKey, rightKey) -> leftKey;
+
+    KStream<String, Alphabet> joinedKStream =
+        alphabetAbbreviation.join(alphabetKTable, keyValueMapper, valueJoiner);
     joinedKStream.print(
         Printed.<String, Alphabet>toSysOut().withLabel("alphabet-with-abbrevation"));
   }
