@@ -33,7 +33,7 @@ public class JoinsMockDataProducer {
 
     var alphabetAbbrevationMap = Map.of("A", "Apple", "B", "Bus", "C", "Cat");
 
-    // publishMessages(alphabetAbbrevationMap, ALPHABETS_ABBREVATIONS);
+    publishMessages(alphabetAbbrevationMap, ALPHABETS_ABBREVATIONS);
 
     alphabetAbbrevationMap =
         Map.of(

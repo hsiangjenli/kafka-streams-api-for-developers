@@ -21,9 +21,37 @@ public class ExploreJoinsOperatorsTopology {
     // joinStreamWithGlobalKTable(streamsBuilder);
     // joinKtableWithKTable(streamsBuilder);
     // joinStreamWithStream(streamsBuilder);
-    leftJoinStreamWithStream(streamsBuilder);
+    // leftJoinStreamWithStream(streamsBuilder);
+    outerJoinStreamWithStream(streamsBuilder);
 
     return streamsBuilder.build();
+  }
+
+  private static void outerJoinStreamWithStream(StreamsBuilder streamsBuilder) {
+    KStream<String, String> alphabetAbbreviation =
+        streamsBuilder.stream(
+            ALPHABETS_ABBREVATIONS, Consumed.with(Serdes.String(), Serdes.String()));
+    alphabetAbbreviation.print(
+        Printed.<String, String>toSysOut().withLabel(ALPHABETS_ABBREVATIONS));
+
+    KStream<String, String> alphabetStream =
+        streamsBuilder.stream(ALPHABETS, Consumed.with(Serdes.String(), Serdes.String()));
+    alphabetStream.print(Printed.<String, String>toSysOut().withLabel(ALPHABETS));
+
+    ValueJoiner<String, String, Alphabet> valueJoiner = Alphabet::new;
+
+    JoinWindows fiveSecondJoinWindows =
+        JoinWindows.ofTimeDifferenceWithNoGrace(Duration.ofSeconds(5));
+
+    StreamJoined<String, String, String> joinedParams =
+        StreamJoined.with(Serdes.String(), Serdes.String(), Serdes.String());
+
+    KStream<String, Alphabet> joinedStream =
+        alphabetAbbreviation.outerJoin(
+            alphabetStream, valueJoiner, fiveSecondJoinWindows, joinedParams);
+    joinedStream.print(
+        Printed.<String, Alphabet>toSysOut()
+            .withLabel("alphabet_alphabet_abbreviations-kstream-outer-join"));
   }
 
   private static void leftJoinStreamWithStream(StreamsBuilder streamsBuilder) {
