@@ -27,6 +27,7 @@ public class OrdersKafkaStreamApp {
     createTopics(
         config,
         List.of(
+            OrdersTopology.STORES,
             OrdersTopology.ORDERS,
             OrdersTopology.GENERAL_ORDERS,
             OrdersTopology.RESTAURANT_ORDERS));

@@ -3,7 +3,9 @@ package com.learnkafkastreams.topology;
 import com.learnkafkastreams.domain.Order;
 import com.learnkafkastreams.domain.OrderType;
 import com.learnkafkastreams.domain.Revenue;
+import com.learnkafkastreams.domain.Store;
 import com.learnkafkastreams.domain.TotalRevenue;
+import com.learnkafkastreams.domain.TotalRevenueWithAddress;
 import com.learnkafkastreams.serde.SerdesFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serdes;
@@ -22,6 +24,7 @@ import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.kstream.Named;
 import org.apache.kafka.streams.kstream.Predicate;
 import org.apache.kafka.streams.kstream.Printed;
+import org.apache.kafka.streams.kstream.ValueJoiner;
 import org.apache.kafka.streams.kstream.ValueMapper;
 import org.apache.kafka.streams.state.KeyValueStore;
 
@@ -52,6 +55,8 @@ public class OrdersTopology {
         streamsBuilder.stream(ORDERS, Consumed.with(Serdes.String(), SerdesFactory.orderSerde()));
 
     orderStream.print(Printed.<String, Order>toSysOut().withLabel("orders"));
+    KTable<String, Store> storesTable =
+        streamsBuilder.table(STORES, Consumed.with(Serdes.String(), SerdesFactory.storeSerde()));
 
     orderStream
         .split(Named.as("General-Restaurant-Stream"))
@@ -67,7 +72,7 @@ public class OrdersTopology {
                   generalOrderStream.print(
                       Printed.<String, Order>toSysOut().withLabel("generalStream"));
                   aggregateOrdersByCount(generalOrderStream, GENERAL_ORDERS_COUNT);
-                  aggregateOrderByRevenue(generalOrderStream, GENERAL_ORDERS_REVENUE);
+                  aggregateOrderByRevenue(generalOrderStream, GENERAL_ORDERS_REVENUE, storesTable);
                 }))
         .branch(
             restaurnatPredicate,
@@ -81,7 +86,8 @@ public class OrdersTopology {
                   restaurantOrderStream.print(
                       Printed.<String, Order>toSysOut().withLabel("restaurnatStream"));
                   aggregateOrdersByCount(restaurantOrderStream, RESTAURANT_ORDERS_COUNT);
-                  aggregateOrderByRevenue(restaurantOrderStream, RESTAURANT_ORDERS_REVENUE);
+                  aggregateOrderByRevenue(
+                      restaurantOrderStream, RESTAURANT_ORDERS_REVENUE, storesTable);
                 }));
 
     return streamsBuilder.build();
@@ -99,7 +105,9 @@ public class OrdersTopology {
   }
 
   public static void aggregateOrderByRevenue(
-      KStream<String, Order> generalOrderStream, String storeName) {
+      KStream<String, Order> generalOrderStream,
+      String storeName,
+      KTable<String, Store> storesTable) {
 
     Initializer<TotalRevenue> totalRevenueInitializer = TotalRevenue::new;
     Aggregator<String, Order, TotalRevenue> aggregator =
@@ -115,5 +123,13 @@ public class OrdersTopology {
                     .withKeySerde(Serdes.String())
                     .withValueSerde(SerdesFactory.totalRevenueSerde()));
     revenueTable.toStream().print(Printed.<String, TotalRevenue>toSysOut().withLabel(storeName));
+    ValueJoiner<TotalRevenue, Store, TotalRevenueWithAddress> valueJoiner =
+        TotalRevenueWithAddress::new;
+    KTable<String, TotalRevenueWithAddress> revenueWithStoreTable =
+        revenueTable.join(storesTable, valueJoiner);
+    revenueWithStoreTable
+        .toStream()
+        .print(
+            Printed.<String, TotalRevenueWithAddress>toSysOut().withLabel(storeName + "-bystore"));
   }
 }
