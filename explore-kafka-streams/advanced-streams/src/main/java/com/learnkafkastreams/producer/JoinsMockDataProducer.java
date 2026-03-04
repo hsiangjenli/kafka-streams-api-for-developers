@@ -2,6 +2,7 @@ package com.learnkafkastreams.producer;
 
 import static com.learnkafkastreams.producer.ProducerUtil.publishMessageSync;
 import static com.learnkafkastreams.producer.ProducerUtil.publishMessageSyncWithDelay;
+import static com.learnkafkastreams.topology.ExploreJoinsOperatorsTopology.ALPHABETS;
 import static com.learnkafkastreams.topology.ExploreJoinsOperatorsTopology.ALPHABETS_ABBREVATIONS;
 import static java.time.Instant.now;
 
@@ -24,7 +25,7 @@ public class JoinsMockDataProducer {
             //                "A", "A is the First letter in English Alphabets.",
             //                "B", "B is the Second letter in English Alphabets."
             );
-    // publishMessages(alphabetMap, ALPHABETS);
+    publishMessages(alphabetMap, ALPHABETS);
 
     // JoinWindows
     // -4 & 4 will trigger the join
