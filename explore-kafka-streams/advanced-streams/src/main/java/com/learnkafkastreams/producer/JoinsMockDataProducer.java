@@ -24,12 +24,12 @@ public class JoinsMockDataProducer {
     // //                ,
     // "A", "A is the First letter in English Alphabets.",
     // "B", "B is the Second letter in English Alphabets.");
-    // publishMessages(alphabetMap, ALPHABETS);
+    publishMessages(alphabetMap, ALPHABETS);
 
     // JoinWindows
     // -4 & 4 will trigger the join
     // -6 -5 & 5, 6 wont trigger the join
-    publishMessagesWithDelay(alphabetMap, ALPHABETS, 6);
+    // publishMessagesWithDelay(alphabetMap, ALPHABETS, 6);
 
     var alphabetAbbrevationMap = Map.of("A", "Apple", "B", "Bus", "C", "Cat");
 
@@ -40,7 +40,7 @@ public class JoinsMockDataProducer {
             "A", "Airplane",
             "B", "Baby.");
 
-    publishMessages(alphabetAbbrevationMap, ALPHABETS_ABBREVATIONS);
+    // publishMessages(alphabetAbbrevationMap, ALPHABETS_ABBREVATIONS);
   }
 
   private static void publishMessagesToSimulateGrace(
