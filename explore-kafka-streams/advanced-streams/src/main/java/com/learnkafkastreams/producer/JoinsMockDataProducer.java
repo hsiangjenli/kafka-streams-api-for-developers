@@ -3,7 +3,6 @@ package com.learnkafkastreams.producer;
 import static com.learnkafkastreams.producer.ProducerUtil.publishMessageSync;
 import static com.learnkafkastreams.producer.ProducerUtil.publishMessageSyncWithDelay;
 import static com.learnkafkastreams.topology.ExploreJoinsOperatorsTopology.ALPHABETS;
-import static com.learnkafkastreams.topology.ExploreJoinsOperatorsTopology.ALPHABETS_ABBREVATIONS;
 import static java.time.Instant.now;
 
 import java.util.ArrayList;
@@ -18,12 +17,12 @@ public class JoinsMockDataProducer {
 
     var alphabetMap =
         Map.of(
-            // "A", "A is the first letter in English Alphabets.",
-            // "B", "B is the second letter in English Alphabets."
-            //              ,"E", "E is the fifth letter in English Alphabets."
-            //                ,
-            "A", "A is the First letter in English Alphabets.",
-            "B", "B is the Second letter in English Alphabets.");
+            "A", "A is the first letter in English Alphabets.",
+            "B", "B is the second letter in English Alphabets.");
+    //              ,"E", "E is the fifth letter in English Alphabets."
+    // //                ,
+    // "A", "A is the First letter in English Alphabets.",
+    // "B", "B is the Second letter in English Alphabets.");
     publishMessages(alphabetMap, ALPHABETS);
 
     // JoinWindows
@@ -33,14 +32,14 @@ public class JoinsMockDataProducer {
 
     var alphabetAbbrevationMap = Map.of("A", "Apple", "B", "Bus", "C", "Cat");
 
-    publishMessages(alphabetAbbrevationMap, ALPHABETS_ABBREVATIONS);
+    // publishMessages(alphabetAbbrevationMap, ALPHABETS_ABBREVATIONS);
 
     alphabetAbbrevationMap =
         Map.of(
             "A", "Airplane",
             "B", "Baby.");
 
-    publishMessages(alphabetAbbrevationMap, ALPHABETS_ABBREVATIONS);
+    // publishMessages(alphabetAbbrevationMap, ALPHABETS_ABBREVATIONS);
   }
 
   private static void publishMessagesToSimulateGrace(
