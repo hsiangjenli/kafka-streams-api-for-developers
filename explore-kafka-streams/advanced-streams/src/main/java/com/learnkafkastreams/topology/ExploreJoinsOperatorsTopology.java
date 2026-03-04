@@ -20,9 +20,9 @@ public class ExploreJoinsOperatorsTopology {
     // joinStreamWithKTable(streamsBuilder);
     // joinStreamWithGlobalKTable(streamsBuilder);
     // joinKtableWithKTable(streamsBuilder);
-    // joinStreamWithStream(streamsBuilder);
+    joinStreamWithStream(streamsBuilder);
     // leftJoinStreamWithStream(streamsBuilder);
-    outerJoinStreamWithStream(streamsBuilder);
+    // outerJoinStreamWithStream(streamsBuilder);
 
     return streamsBuilder.build();
   }
