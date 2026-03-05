@@ -2,6 +2,7 @@ package com.learnkafkastreams.topology;
 
 import java.time.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.kstream.*;
@@ -13,8 +14,27 @@ public class ExploreWindowTopology {
 
   public static Topology build() {
     StreamsBuilder streamsBuilder = new StreamsBuilder();
+    KStream<String, String> wordsStream =
+        streamsBuilder.stream(WINDOW_WORDS, Consumed.with(Serdes.String(), Serdes.String()));
+    thumblingWindows(wordsStream);
 
     return streamsBuilder.build();
+  }
+
+  private static void thumblingWindows(KStream<String, String> wordsStream) {
+    Duration windowSize = Duration.ofSeconds(5);
+    TimeWindows timeWindows = TimeWindows.ofSizeWithNoGrace(windowSize);
+
+    KTable<Windowed<String>, Long> windowsTable =
+        wordsStream.groupByKey().windowedBy(timeWindows).count();
+    windowsTable
+        .toStream()
+        .peek(
+            (key, value) -> {
+              log.info("thumbling windows : key : {}, value : {}", key, value);
+              printLocalDateTimes(key, value);
+            })
+        .print(Printed.<Windowed<String>, Long>toSysOut().withLabel(WINDOW_WORDS));
   }
 
   private static void printLocalDateTimes(Windowed<String> key, Long value) {

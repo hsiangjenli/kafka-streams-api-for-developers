@@ -14,6 +14,7 @@ import org.apache.kafka.streams.Topology;
 
 @Slf4j
 public class OrdersKafkaStreamApp {
+  
 
   public static void main(String[] args) {
 
@@ -31,7 +32,7 @@ public class OrdersKafkaStreamApp {
             OrdersTopology.ORDERS,
             OrdersTopology.GENERAL_ORDERS,
             OrdersTopology.RESTAURANT_ORDERS));
-
+    
     // Create an instance of KafkaStreams
     var kafkaStreams = new KafkaStreams(topology, config);
 
@@ -43,6 +44,7 @@ public class OrdersKafkaStreamApp {
       log.error("Exception in starting the Streams : {}", e.getMessage(), e);
     }
   }
+
 
   private static void createTopics(Properties config, List<String> greetings) {
 
