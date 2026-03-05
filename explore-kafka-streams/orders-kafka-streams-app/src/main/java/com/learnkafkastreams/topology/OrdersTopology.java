@@ -4,9 +4,13 @@ import com.learnkafkastreams.domain.Order;
 import com.learnkafkastreams.domain.OrderType;
 import com.learnkafkastreams.domain.Revenue;
 import com.learnkafkastreams.domain.Store;
+import com.learnkafkastreams.domain.TotalCountWithAddress;
 import com.learnkafkastreams.domain.TotalRevenue;
 import com.learnkafkastreams.domain.TotalRevenueWithAddress;
 import com.learnkafkastreams.serde.SerdesFactory;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.utils.Bytes;
@@ -24,8 +28,11 @@ import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.kstream.Named;
 import org.apache.kafka.streams.kstream.Predicate;
 import org.apache.kafka.streams.kstream.Printed;
+import org.apache.kafka.streams.kstream.Suppressed;
+import org.apache.kafka.streams.kstream.TimeWindows;
 import org.apache.kafka.streams.kstream.ValueJoiner;
 import org.apache.kafka.streams.kstream.ValueMapper;
+import org.apache.kafka.streams.kstream.Windowed;
 import org.apache.kafka.streams.state.KeyValueStore;
 
 @Slf4j
@@ -35,9 +42,11 @@ public class OrdersTopology {
   public static final String STORES = "stores";
   public static final String GENERAL_ORDERS = "general_orders";
   public static final String GENERAL_ORDERS_COUNT = "general_orders_count";
+  public static final String GENERAL_ORDERS_COUNT_WINDOWS = "general_orders_count_windows";
   public static final String GENERAL_ORDERS_REVENUE = "general_orders_revenue";
   public static final String RESTAURANT_ORDERS = "restaurant_orders";
   public static final String RESTAURANT_ORDERS_COUNT = "restaurant_order_count";
+  public static final String RESTAURANT_ORDERS_COUNT_WINDOWS = "restaurant_order_count_windows";
   public static final String RESTAURANT_ORDERS_REVENUE = "restaurant_orders_revenue";
 
   public static Topology buildTopology() {
@@ -71,8 +80,11 @@ public class OrdersTopology {
                   //           Produced.with(Serdes.String(), SerdesFactory.revenueSerde()));
                   generalOrderStream.print(
                       Printed.<String, Order>toSysOut().withLabel("generalStream"));
-                  aggregateOrdersByCount(generalOrderStream, GENERAL_ORDERS_COUNT);
-                  aggregateOrderByRevenue(generalOrderStream, GENERAL_ORDERS_REVENUE, storesTable);
+                  //   aggregateOrdersByCount(generalOrderStream, GENERAL_ORDERS_COUNT);
+                  aggregateOrdersCountByTimeWindows(
+                      generalOrderStream, GENERAL_ORDERS_COUNT_WINDOWS, storesTable);
+                  //   aggregateOrderByRevenue(generalOrderStream, GENERAL_ORDERS_REVENUE,
+                  // storesTable);
                 }))
         .branch(
             restaurnatPredicate,
@@ -85,12 +97,42 @@ public class OrdersTopology {
                   //           Produced.with(Serdes.String(), SerdesFactory.revenueSerde()));
                   restaurantOrderStream.print(
                       Printed.<String, Order>toSysOut().withLabel("restaurnatStream"));
-                  aggregateOrdersByCount(restaurantOrderStream, RESTAURANT_ORDERS_COUNT);
-                  aggregateOrderByRevenue(
-                      restaurantOrderStream, RESTAURANT_ORDERS_REVENUE, storesTable);
+                  //   aggregateOrdersByCount(restaurantOrderStream, RESTAURANT_ORDERS_COUNT);
+                  aggregateOrdersCountByTimeWindows(
+                      restaurantOrderStream, RESTAURANT_ORDERS_COUNT_WINDOWS, storesTable);
+                  //   aggregateOrderByRevenue(
+                  //       restaurantOrderStream, RESTAURANT_ORDERS_REVENUE, storesTable);
                 }));
 
     return streamsBuilder.build();
+  }
+
+  private static void aggregateOrdersCountByTimeWindows(
+      KStream<String, Order> generalOrderStream,
+      String storeName,
+      KTable<String, Store> storesTable) {
+    Duration windowsSize = Duration.ofSeconds(15);
+    TimeWindows timeWindows = TimeWindows.ofSizeWithNoGrace(windowsSize);
+
+    KTable<Windowed<String>, Long> orderCountPerStore =
+        generalOrderStream
+            .map((key, value) -> KeyValue.pair(value.locationId(), value))
+            .groupByKey(Grouped.with(Serdes.String(), SerdesFactory.orderSerde()))
+            .windowedBy(timeWindows)
+            .count(Named.as(storeName), Materialized.as(storeName))
+            .suppress(
+                Suppressed.untilWindowCloses(
+                    Suppressed.BufferConfig.unbounded().shutDownWhenFull()));
+
+    orderCountPerStore
+        .toStream()
+        .peek(
+            (key, value) -> {
+              log.info("store name : {}, key : {}, value : {}", storeName, key, value);
+              printLocalDateTimes(key, value);
+            })
+        .print(Printed.<Windowed<String>, Long>toSysOut().withLabel(storeName));
+    ValueJoiner<Long, Store, TotalCountWithAddress> valueJoiner = TotalCountWithAddress::new;
   }
 
   public static void aggregateOrdersByCount(
@@ -131,5 +173,15 @@ public class OrdersTopology {
         .toStream()
         .print(
             Printed.<String, TotalRevenueWithAddress>toSysOut().withLabel(storeName + "-bystore"));
+  }
+
+  private static void printLocalDateTimes(Windowed<String> key, Long value) {
+    var startTime = key.window().startTime();
+    var endTime = key.window().endTime();
+    log.info("startTime : {} , endTime : {}, Count : {}", startTime, endTime, value);
+    LocalDateTime startLDT =
+        LocalDateTime.ofInstant(startTime, ZoneId.of(ZoneId.SHORT_IDS.get("CST")));
+    LocalDateTime endLDT = LocalDateTime.ofInstant(endTime, ZoneId.of(ZoneId.SHORT_IDS.get("CST")));
+    log.info("startLDT : {} , endLDT : {}, Count : {}", startLDT, endLDT, value);
   }
 }

@@ -2,7 +2,6 @@ package com.learnkafkastreams;
 
 import com.learnkafkastreams.topology.OrdersTopology;
 import com.learnkafkastreams.util.OrderTimeStampExtractor;
-
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -16,7 +15,6 @@ import org.apache.kafka.streams.Topology;
 
 @Slf4j
 public class OrdersKafkaStreamApp {
-  
 
   public static void main(String[] args) {
 
@@ -27,7 +25,8 @@ public class OrdersKafkaStreamApp {
     config.put(StreamsConfig.APPLICATION_ID_CONFIG, "orders-app"); // consumer group
     config.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
     config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest"); // read only the new messages
-    config.put(StreamsConfig.DEFAULT_TIMESTAMP_EXTRACTOR_CLASS_CONFIG, OrderTimeStampExtractor.class);
+    config.put(
+        StreamsConfig.DEFAULT_TIMESTAMP_EXTRACTOR_CLASS_CONFIG, OrderTimeStampExtractor.class);
 
     createTopics(
         config,
@@ -36,7 +35,7 @@ public class OrdersKafkaStreamApp {
             OrdersTopology.ORDERS,
             OrdersTopology.GENERAL_ORDERS,
             OrdersTopology.RESTAURANT_ORDERS));
-    
+
     // Create an instance of KafkaStreams
     var kafkaStreams = new KafkaStreams(topology, config);
 
@@ -48,7 +47,6 @@ public class OrdersKafkaStreamApp {
       log.error("Exception in starting the Streams : {}", e.getMessage(), e);
     }
   }
-
 
   private static void createTopics(Properties config, List<String> greetings) {
 

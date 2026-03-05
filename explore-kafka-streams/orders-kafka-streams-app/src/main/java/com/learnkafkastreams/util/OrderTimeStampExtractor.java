@@ -1,14 +1,11 @@
 package com.learnkafkastreams.util;
 
+import com.learnkafkastreams.domain.Order;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.streams.processor.TimestampExtractor;
-
-import com.learnkafkastreams.domain.Order;
-
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class OrderTimeStampExtractor implements TimestampExtractor {
@@ -34,5 +31,4 @@ public class OrderTimeStampExtractor implements TimestampExtractor {
 
     return timeStamp.toInstant(ZoneOffset.UTC).toEpochMilli();
   }
-
 }
