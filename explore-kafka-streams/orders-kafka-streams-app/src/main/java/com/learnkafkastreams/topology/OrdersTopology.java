@@ -22,6 +22,7 @@ import org.apache.kafka.streams.kstream.Branched;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.Grouped;
 import org.apache.kafka.streams.kstream.Initializer;
+import org.apache.kafka.streams.kstream.Joined;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KTable;
 import org.apache.kafka.streams.kstream.Materialized;
@@ -146,6 +147,19 @@ public class OrdersTopology {
               printLocalDateTimesObject(key, value);
             })
         .print(Printed.<Windowed<String>, TotalRevenue>toSysOut().withLabel(storeName));
+
+    ValueJoiner<TotalRevenue, Store, TotalRevenueWithAddress> valueJoiner =
+        TotalRevenueWithAddress::new;
+
+    Joined<String, TotalRevenue, Store> joinedParams =
+        Joined.with(Serdes.String(), SerdesFactory.totalRevenueSerde(), SerdesFactory.storeSerde());
+
+    revenueTable
+        .toStream()
+        .map((key, value) -> KeyValue.pair(key.key(), value))
+        .join(storesTable, valueJoiner, joinedParams)
+        .print(
+            Printed.<String, TotalRevenueWithAddress>toSysOut().withLabel(storeName + "-bystore"));
   }
 
   private static void aggregateOrdersCountByTimeWindows(
