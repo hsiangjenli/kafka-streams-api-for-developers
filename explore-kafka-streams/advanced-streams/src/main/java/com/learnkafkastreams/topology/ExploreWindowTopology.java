@@ -17,7 +17,8 @@ public class ExploreWindowTopology {
     KStream<String, String> wordsStream =
         streamsBuilder.stream(WINDOW_WORDS, Consumed.with(Serdes.String(), Serdes.String()));
     // thumblingWindows(wordsStream);
-    hoppingWindows(wordsStream);
+    // hoppingWindows(wordsStream);
+    slidingWindows(wordsStream);
 
     return streamsBuilder.build();
   }
@@ -63,6 +64,29 @@ public class ExploreWindowTopology {
         .peek(
             (key, value) -> {
               log.info("hopping windows : key : {}, value : {}", key, value);
+              printLocalDateTimes(key, value);
+            })
+        .print(Printed.<Windowed<String>, Long>toSysOut().withLabel(WINDOW_WORDS));
+  }
+
+  private static void slidingWindows(KStream<String, String> wordsStream) {
+
+    Duration windowSize = Duration.ofSeconds(5);
+    SlidingWindows slidingWindows = SlidingWindows.ofTimeDifferenceWithNoGrace(windowSize);
+
+    KTable<Windowed<String>, Long> windowsTable =
+        wordsStream
+            .groupByKey()
+            .windowedBy(slidingWindows)
+            .count()
+            .suppress(
+                Suppressed.untilWindowCloses(
+                    Suppressed.BufferConfig.unbounded().shutDownWhenFull()));
+    windowsTable
+        .toStream()
+        .peek(
+            (key, value) -> {
+              log.info("sliding windows : key : {}, value : {}", key, value);
               printLocalDateTimes(key, value);
             })
         .print(Printed.<Windowed<String>, Long>toSysOut().withLabel(WINDOW_WORDS));
