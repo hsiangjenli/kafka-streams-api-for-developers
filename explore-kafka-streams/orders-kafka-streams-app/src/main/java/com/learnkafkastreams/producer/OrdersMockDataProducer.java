@@ -26,16 +26,15 @@ public class OrdersMockDataProducer {
             .registerModule(new JavaTimeModule())
             .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
-    publishOrders(objectMapper, buildOrders());
+    // publishOrders(objectMapper, buildOrders());
     // publishBulkOrders(objectMapper);
 
     // grace-period
     //        publishOrdersForGracePeriod(objectMapper, buildOrders());
 
     // Future and Old Records
-    //        publishFutureRecords(objectMapper);
-    //        publishExpiredRecords(objectMapper);
-
+    publishFutureRecords(objectMapper);
+    publishExpiredRecords(objectMapper);
   }
 
   private static void publishFutureRecords(ObjectMapper objectMapper) {
