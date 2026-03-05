@@ -26,7 +26,13 @@ public class ExploreWindowTopology {
     TimeWindows timeWindows = TimeWindows.ofSizeWithNoGrace(windowSize);
 
     KTable<Windowed<String>, Long> windowsTable =
-        wordsStream.groupByKey().windowedBy(timeWindows).count();
+        wordsStream
+            .groupByKey()
+            .windowedBy(timeWindows)
+            .count()
+            .suppress(
+                Suppressed.untilWindowCloses(
+                    Suppressed.BufferConfig.unbounded().shutDownWhenFull()));
     windowsTable
         .toStream()
         .peek(
