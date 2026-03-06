@@ -25,8 +25,12 @@ public class GreetingStreamsTopology {
         streamsBuilder.stream(GREETING, Consumed.with(Serdes.String(), greetingSerde));
     greetinStream.print(Printed.<String, Greeting>toSysOut().withLabel(GREETING));
 
-    var modifiedStream = greetinStream.mapValues(
-        (readOnluKey, value) -> new Greeting(value.message().toUpperCase(), value.timeStamp()));
+    var modifiedStream = greetinStream.mapValues((readOnluKey, value) -> {
+      if (value.message().equals("Error")) {
+        throw new IllegalStateException("Error Occured");
+      }
+      return new Greeting(value.message().toUpperCase(), value.timeStamp());
+    });
     modifiedStream.print(Printed.<String, Greeting>toSysOut().withLabel(GREETING + "-modified"));
     modifiedStream.to(GREETING_OUTPUT, Produced.with(Serdes.String(), greetingSerde));
   }

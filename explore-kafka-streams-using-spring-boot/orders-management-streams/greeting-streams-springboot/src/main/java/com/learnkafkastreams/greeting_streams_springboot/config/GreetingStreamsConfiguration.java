@@ -10,6 +10,7 @@ import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.annotation.KafkaStreamsDefaultConfiguration;
 import org.springframework.kafka.config.KafkaStreamsConfiguration;
+import org.springframework.kafka.config.StreamsBuilderFactoryBeanConfigurer;
 import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.listener.ConsumerRecordRecoverer;
 import org.springframework.kafka.streams.RecoveringDeserializationExceptionHandler;
@@ -23,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.learnkafkastreams.greeting_streams_springboot.domain.Greeting;
+import com.learnkafkastreams.greeting_streams_springboot.exceptionhandler.StreamsProcessorCustomErrorHandler;
 
 @Slf4j
 @Component
@@ -42,6 +44,14 @@ public class GreetingStreamsConfiguration {
         RecoveringDeserializationExceptionHandler.KSTREAM_DESERIALIZATION_RECOVERER, recoverer());
 
     return new KafkaStreamsConfiguration(kafkaStreamProperties);
+  }
+
+  @Bean
+  public StreamsBuilderFactoryBeanConfigurer streamsBuilderFactoryBeanConfigurer() {
+    return factoryBeanConfigurer -> {
+      factoryBeanConfigurer
+          .setStreamsUncaughtExceptionHandler(new StreamsProcessorCustomErrorHandler());
+    };
   }
 
   private ConsumerRecordRecoverer recoverer() {

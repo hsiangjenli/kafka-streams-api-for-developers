@@ -41,7 +41,7 @@ public class GreetingMockDataProducer {
 
   private static void englishGreetings(ObjectMapper objectMapper) {
     var spanishGreetings = List.of(new Greeting("¡Hola buenos dias!", LocalDateTime.now()),
-        new Greeting("Transient Error", LocalDateTime.now()),
+        new Greeting("Error", LocalDateTime.now()),
         new Greeting("¡Hola buenas tardes!", LocalDateTime.now()),
         new Greeting("¡Hola, buenas noches!", LocalDateTime.now()));
     spanishGreetings.forEach(greeting -> {
