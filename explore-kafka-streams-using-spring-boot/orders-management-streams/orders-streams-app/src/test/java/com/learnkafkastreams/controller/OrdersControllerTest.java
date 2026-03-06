@@ -1,4 +1,3 @@
 package com.learnkafkastreams.controller;
 
-public class OrdersControllerTest {
-}
+public class OrdersControllerTest {}
