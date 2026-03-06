@@ -20,4 +20,4 @@ spring:
       default:
         deserialization:
           exception:
-            handler: com.learnkafkastreams.greeting_streams_springboot.exceptionhandler.StreamDeserializationExceptionHandler
+            # handler: com.learnkafkastreams.greeting_streams_springboot.exceptionhandler.StreamDeserializationExceptionHandler
