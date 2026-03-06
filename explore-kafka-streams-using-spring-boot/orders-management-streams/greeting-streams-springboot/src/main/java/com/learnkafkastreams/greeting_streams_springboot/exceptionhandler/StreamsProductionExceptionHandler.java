@@ -6,7 +6,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.streams.errors.ProductionExceptionHandler;
 
 @Slf4j
-public class StreamsSerializationExceptionHandler implements ProductionExceptionHandler {
+public class StreamsProductionExceptionHandler implements ProductionExceptionHandler {
   @Override
   public ProductionExceptionHandlerResponse handle(ProducerRecord<byte[], byte[]> record,
       Exception exception) {

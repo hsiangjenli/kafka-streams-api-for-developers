@@ -21,3 +21,6 @@ spring:
         deserialization:
           exception:
             # handler: com.learnkafkastreams.greeting_streams_springboot.exceptionhandler.StreamDeserializationExceptionHandler
+        production:
+          exception:
+            handler: com.learnkafkastreams.greeting_streams_springboot.exceptionhandler.StreamsProductionExceptionHandler
