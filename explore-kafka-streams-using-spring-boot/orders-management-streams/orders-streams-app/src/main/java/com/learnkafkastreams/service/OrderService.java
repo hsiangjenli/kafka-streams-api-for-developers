@@ -2,11 +2,15 @@ package com.learnkafkastreams.service;
 
 import static com.learnkafkastreams.topology.OrdersTopology.GENERAL_ORDERS;
 import static com.learnkafkastreams.topology.OrdersTopology.GENERAL_ORDERS_COUNT;
+import static com.learnkafkastreams.topology.OrdersTopology.GENERAL_ORDERS_REVENUE;
 import static com.learnkafkastreams.topology.OrdersTopology.RESTAURANT_ORDERS;
 import static com.learnkafkastreams.topology.OrdersTopology.RESTAURANT_ORDERS_COUNT;
+import static com.learnkafkastreams.topology.OrdersTopology.RESTAURANT_ORDERS_REVENUE;
 import com.learnkafkastreams.domain.AllOrdersCountPerStoreDTO;
 import com.learnkafkastreams.domain.OrderCountPerStoreDTO;
+import com.learnkafkastreams.domain.OrderRevenueDTO;
 import com.learnkafkastreams.domain.OrderType;
+import com.learnkafkastreams.domain.TotalRevenue;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -70,6 +74,35 @@ public class OrderService {
 
     return Stream.of(generalOrdersCount, restaurantOrderCounts).flatMap(Collection::stream)
         .collect(Collectors.toList());
+  }
+
+  public List<OrderRevenueDTO> getRevenueByOrderType(String orderType) {
+
+    getRevenueStore(orderType);
+
+    var revenueStore = getRevenueStore(orderType);
+    var revenues = revenueStore.all();
+    var spliterator = Spliterators.spliteratorUnknownSize(revenues, 0);
+    return StreamSupport.stream(spliterator, false)
+        .map(keyValue -> new OrderRevenueDTO(keyValue.key, mapOrderType(orderType), keyValue.value))
+        .collect(Collectors.toList());
+
+  }
+
+  private OrderType mapOrderType(String orderType) {
+    return switch (orderType) {
+      case GENERAL_ORDERS -> OrderType.GENERAL;
+      case RESTAURANT_ORDERS -> OrderType.RESTAURANT;
+      default -> throw new IllegalStateException();
+    };
+  }
+
+  private ReadOnlyKeyValueStore<String, TotalRevenue> getRevenueStore(String orderType) {
+    return switch (orderType) {
+      case GENERAL_ORDERS -> orderStoreService.orderRevenueStore(GENERAL_ORDERS_REVENUE);
+      case RESTAURANT_ORDERS -> orderStoreService.orderRevenueStore(RESTAURANT_ORDERS_REVENUE);
+      default -> throw new IllegalStateException();
+    };
   }
 
 }

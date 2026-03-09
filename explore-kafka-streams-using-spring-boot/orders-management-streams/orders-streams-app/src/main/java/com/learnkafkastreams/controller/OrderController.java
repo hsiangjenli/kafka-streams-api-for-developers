@@ -1,6 +1,7 @@
 package com.learnkafkastreams.controller;
 
 import com.learnkafkastreams.domain.AllOrdersCountPerStoreDTO;
+import com.learnkafkastreams.domain.OrderRevenueDTO;
 import com.learnkafkastreams.service.OrderService;
 import io.micrometer.common.util.StringUtils;
 import java.util.List;
@@ -37,6 +38,12 @@ public class OrderController {
     return ResponseEntity.ok(orderService.getAllOrderCount());
   }
 
+
+  @GetMapping("/revenue/{order_type}")
+  public ResponseEntity<List<OrderRevenueDTO>> revenueByOrderType(
+      @PathVariable("order_type") String orderType) {
+    return ResponseEntity.ok(orderService.getRevenueByOrderType(orderType));
+  }
 
 
 }
