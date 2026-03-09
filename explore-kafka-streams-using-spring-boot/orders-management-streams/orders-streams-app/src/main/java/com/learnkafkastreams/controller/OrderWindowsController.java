@@ -25,4 +25,9 @@ public class OrderWindowsController {
     return ResponseEntity.ok(orderWindowsService.getOrderCountWindowsByType(orderType));
   }
 
+  @GetMapping("/windows/count")
+  public ResponseEntity<List<OrdersCountPerStoreByWindowsDTO>> getAllOrderCountWindows() {
+    return ResponseEntity.ok(orderWindowsService.getAllOrderCountWindows());
+  }
+
 }

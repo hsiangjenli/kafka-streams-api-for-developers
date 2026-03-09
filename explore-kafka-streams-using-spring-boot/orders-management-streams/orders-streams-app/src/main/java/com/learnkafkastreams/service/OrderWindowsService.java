@@ -6,6 +6,7 @@ import static com.learnkafkastreams.topology.OrdersTopology.RESTAURANT_ORDERS;
 import static com.learnkafkastreams.topology.OrdersTopology.RESTAURANT_ORDERS_COUNT_WINDOWS;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Collection;
 import java.util.List;
 import java.util.Spliterators;
 import java.util.stream.Collectors;
@@ -47,6 +48,14 @@ public class OrderWindowsService {
           .orderWindowsCountStore(RESTAURANT_ORDERS_COUNT_WINDOWS);
       default -> throw new IllegalStateException();
     };
+  }
+
+  public List<OrdersCountPerStoreByWindowsDTO> getAllOrderCountWindows() {
+
+    var generalOrderCountWindows = getOrderCountWindowsByType(GENERAL_ORDERS);
+    var restaurantOrderCountWindows = getOrderCountWindowsByType(RESTAURANT_ORDERS);
+    return Stream.of(generalOrderCountWindows, restaurantOrderCountWindows)
+        .flatMap(Collection::stream).collect(Collectors.toList());
   }
 
 }
