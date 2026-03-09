@@ -3,6 +3,7 @@ package com.learnkafkastreams.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.learnkafkastreams.domain.OrdersCountPerStoreByWindowsDTO;
+import com.learnkafkastreams.domain.OrdersRevenuePerStoreByWindowsDTO;
 import com.learnkafkastreams.service.OrderWindowsService;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -41,6 +42,10 @@ public class OrderWindowsController {
     return ResponseEntity.ok(orderWindowsService.getAllOrderCountWindows());
   }
 
-
+  @GetMapping("/windows/revenue/{order_type}")
+  public ResponseEntity<List<OrdersRevenuePerStoreByWindowsDTO>> getOrderRevenue(
+      @PathVariable("order_type") String orderType) {
+    return ResponseEntity.ok(orderWindowsService.getOrderRevenueWindowsByType(orderType));
+  }
 
 }

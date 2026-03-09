@@ -2,8 +2,10 @@ package com.learnkafkastreams.service;
 
 import static com.learnkafkastreams.topology.OrdersTopology.GENERAL_ORDERS;
 import static com.learnkafkastreams.topology.OrdersTopology.GENERAL_ORDERS_COUNT_WINDOWS;
+import static com.learnkafkastreams.topology.OrdersTopology.GENERAL_ORDERS_REVENUE_WINDOWS;
 import static com.learnkafkastreams.topology.OrdersTopology.RESTAURANT_ORDERS;
 import static com.learnkafkastreams.topology.OrdersTopology.RESTAURANT_ORDERS_COUNT_WINDOWS;
+import static com.learnkafkastreams.topology.OrdersTopology.RESTAURANT_ORDERS_REVENUE_WINDOWS;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -21,6 +23,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import com.learnkafkastreams.domain.OrderType;
 import com.learnkafkastreams.domain.OrdersCountPerStoreByWindowsDTO;
+import com.learnkafkastreams.domain.OrdersRevenuePerStoreByWindowsDTO;
+import com.learnkafkastreams.domain.TotalRevenue;
 import static com.learnkafkastreams.service.OrderService.mapOrderType;
 import lombok.extern.slf4j.Slf4j;
 
@@ -86,6 +90,33 @@ public class OrderWindowsService {
 
     return Stream.of(generalOrderCountWindowsDTO, restaurantOrderCountWindowsDTO)
         .flatMap(Collection::stream).collect(Collectors.toList());
+  }
+
+  public List<OrdersRevenuePerStoreByWindowsDTO> getOrderRevenueWindowsByType(String orderType) {
+    var revenueWindowsStore = getRevenueWindowsStore(orderType);
+    var orderTypeEnum = mapOrderType(orderType);
+    var revenueWindowsIterator = revenueWindowsStore.all();
+
+    var spliterator = Spliterators.spliteratorUnknownSize(revenueWindowsIterator, 0);
+
+    return StreamSupport.stream(spliterator, false)
+        .map(keyValue -> new OrdersRevenuePerStoreByWindowsDTO(keyValue.key.key(), keyValue.value,
+            orderTypeEnum,
+            LocalDateTime.ofInstant(keyValue.key.window().startTime(), ZoneId.of("GMT")),
+            LocalDateTime.ofInstant(keyValue.key.window().endTime(), ZoneId.of("GMT"))
+
+        )).collect(Collectors.toList());
+
+  }
+
+  public ReadOnlyWindowStore<String, TotalRevenue> getRevenueWindowsStore(String orderType) {
+    return switch (orderType) {
+      case GENERAL_ORDERS -> orderStoreService
+          .orderWindowsRevenueStore(GENERAL_ORDERS_REVENUE_WINDOWS);
+      case RESTAURANT_ORDERS -> orderStoreService
+          .orderWindowsRevenueStore(RESTAURANT_ORDERS_REVENUE_WINDOWS);
+      default -> throw new IllegalStateException();
+    };
   }
 
 }
