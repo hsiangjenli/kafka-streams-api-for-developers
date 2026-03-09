@@ -1,6 +1,6 @@
 package com.learnkafkastreams.controller;
 
-import com.learnkafkastreams.domain.OrderCountPerStoreDTO;
+import com.learnkafkastreams.domain.AllOrdersCountPerStoreDTO;
 import com.learnkafkastreams.service.OrderService;
 import io.micrometer.common.util.StringUtils;
 import java.util.List;
@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 
 @RestController
@@ -31,6 +29,12 @@ public class OrderController {
     }
 
     return ResponseEntity.ok(orderService.getOrdersCount(orderType));
+  }
+
+
+  @GetMapping("/count")
+  public ResponseEntity<List<AllOrdersCountPerStoreDTO>> getOrdersCount() {
+    return ResponseEntity.ok(orderService.getAllOrderCount());
   }
 
 
