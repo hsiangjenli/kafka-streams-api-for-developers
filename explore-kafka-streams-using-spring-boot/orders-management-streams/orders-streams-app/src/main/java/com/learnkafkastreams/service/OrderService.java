@@ -19,7 +19,8 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class OrderService {
 
-  @Autowired private OrderStoreService orderStoreService;
+  @Autowired
+  private OrderStoreService orderStoreService;
 
   public List<OrderCountPerStoreDTO> getOrdersCount(String orderType) {
     var orderCountStore = getOrderStore(orderType);
@@ -37,4 +38,15 @@ public class OrderService {
       default -> throw new IllegalStateException();
     };
   }
+
+  public OrderCountPerStoreDTO getOrdersCountByLocationId(String orderType, String location_id) {
+    var orderCountStore = getOrderStore(orderType);
+    var orderCount = orderCountStore.get(location_id);
+    if (orderCount != null) {
+      return new OrderCountPerStoreDTO(location_id, orderCount);
+    }
+
+    return null;
+  }
+
 }
