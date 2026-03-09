@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,10 +24,10 @@ public class OrderController {
 
   @GetMapping("/count/{order_type}")
   public ResponseEntity<?> getOrdersCount(@PathVariable("order_type") String orderType,
-      @PathVariable(required = false) String location_id) {
+      @RequestParam(name = "location_id", required = false) String locationId) {
 
-    if (StringUtils.isNotEmpty(location_id)) {
-      return ResponseEntity.ok(orderService.getOrdersCountByLocationId(orderType, location_id));
+    if (StringUtils.isNotEmpty(locationId)) {
+      return ResponseEntity.ok(orderService.getOrdersCountByLocationId(orderType, locationId));
     }
 
     return ResponseEntity.ok(orderService.getOrdersCount(orderType));
