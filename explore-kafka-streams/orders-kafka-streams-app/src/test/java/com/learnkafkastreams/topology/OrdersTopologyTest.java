@@ -1,57 +1,78 @@
 package com.learnkafkastreams.topology;
 
+import static com.learnkafkastreams.topology.OrdersTopology.GENERAL_ORDERS_COUNT;
 import static com.learnkafkastreams.topology.OrdersTopology.ORDERS;
-
+import static com.learnkafkastreams.topology.OrdersTopology.RESTAURANT_ORDERS_COUNT;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.learnkafkastreams.domain.Order;
 import com.learnkafkastreams.domain.OrderLineItem;
 import com.learnkafkastreams.domain.OrderType;
+import com.learnkafkastreams.serde.SerdesFactory;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.TestInputTopic;
 import org.apache.kafka.streams.TopologyTestDriver;
+import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class OrdersTopologyTest {
 
   TopologyTestDriver topologyTestDriver = null;
-  TestInputTopic<String, Order> ordersInputTopic = null;
+
+  TestInputTopic<String, Order> orderInputTopic = null;
 
   static String INPUT_TOPIC = ORDERS;
 
+  @BeforeEach
+  void setUp() {
+    topologyTestDriver = new TopologyTestDriver(OrdersTopology.buildTopology());
+    orderInputTopic = topologyTestDriver.createInputTopic(ORDERS, Serdes.String().serializer(),
+        SerdesFactory.orderSerde().serializer());
+  }
+
+  @AfterEach
+  void tearDown() {
+    topologyTestDriver.close();
+  }
+
+  @Test
+  void orderCount() {
+    orderInputTopic.pipeKeyValueList(orders());
+
+    ReadOnlyKeyValueStore<String, Long> generalOrderCountStore =
+        topologyTestDriver.getKeyValueStore(GENERAL_ORDERS_COUNT);
+    ReadOnlyKeyValueStore<String, Long> restaurantOrderCountStore =
+        topologyTestDriver.getKeyValueStore(RESTAURANT_ORDERS_COUNT);
+
+    var generalOrderCount = generalOrderCountStore.get("store_1234");
+    assertEquals(1, generalOrderCount);
+    var restaurantOrderCount = restaurantOrderCountStore.get("store_1234");
+    assertEquals(1, restaurantOrderCount);
+
+  }
+
   static List<KeyValue<String, Order>> orders() {
 
-    var orderItems =
-        List.of(
-            new OrderLineItem("Bananas", 2, new BigDecimal("2.00")),
-            new OrderLineItem("Iphone Charger", 1, new BigDecimal("25.00")));
+    var orderItems = List.of(new OrderLineItem("Bananas", 2, new BigDecimal("2.00")),
+        new OrderLineItem("Iphone Charger", 1, new BigDecimal("25.00")));
 
-    var orderItemsRestaurant =
-        List.of(
-            new OrderLineItem("Pizza", 2, new BigDecimal("12.00")),
-            new OrderLineItem("Coffee", 1, new BigDecimal("3.00")));
+    var orderItemsRestaurant = List.of(new OrderLineItem("Pizza", 2, new BigDecimal("12.00")),
+        new OrderLineItem("Coffee", 1, new BigDecimal("3.00")));
 
-    var order1 =
-        new Order(
-            12345,
-            "store_1234",
-            new BigDecimal("27.00"),
-            OrderType.GENERAL,
-            orderItems,
-            LocalDateTime.now()
-            // LocalDateTime.now(ZoneId.of("UTC"))
-            );
+    var order1 = new Order(12345, "store_1234", new BigDecimal("27.00"), OrderType.GENERAL,
+        orderItems, LocalDateTime.now()
+    // LocalDateTime.now(ZoneId.of("UTC"))
+    );
 
-    var order2 =
-        new Order(
-            54321,
-            "store_1234",
-            new BigDecimal("15.00"),
-            OrderType.RESTAURANT,
-            orderItemsRestaurant,
-            LocalDateTime.now()
-            // LocalDateTime.now(ZoneId.of("UTC"))
-            );
+    var order2 = new Order(54321, "store_1234", new BigDecimal("15.00"), OrderType.RESTAURANT,
+        orderItemsRestaurant, LocalDateTime.now()
+    // LocalDateTime.now(ZoneId.of("UTC"))
+    );
     var keyValue1 = KeyValue.pair(order1.orderId().toString(), order1);
 
     var keyValue2 = KeyValue.pair(order2.orderId().toString(), order2);

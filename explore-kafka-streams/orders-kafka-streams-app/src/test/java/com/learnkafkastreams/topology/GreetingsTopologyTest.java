@@ -2,6 +2,9 @@ package com.learnkafkastreams.topology;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import com.learnkafkastreams.domain.Greeting;
+import com.learnkafkastreams.serdes.SerdesFactory;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.apache.kafka.common.serialization.Serdes;
@@ -12,8 +15,6 @@ import org.apache.kafka.streams.TopologyTestDriver;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import com.learnkafkastreams.domain.Greeting;
-import com.learnkafkastreams.serdes.SerdesFactory;
 
 public class GreetingsTopologyTest {
 
@@ -26,10 +27,16 @@ public class GreetingsTopologyTest {
   @BeforeEach
   void setUp() {
     topologyTestDriver = new TopologyTestDriver(GreetingsTopology.buildTopology());
-    inputTopic = topologyTestDriver.createInputTopic(GreetingsTopology.GREETINGS,
-        Serdes.String().serializer(), SerdesFactory.greetingSerdesGenerics().serializer());
-    outputTopic = topologyTestDriver.createOutputTopic(GreetingsTopology.GREETINGS_UPPERCASE,
-        Serdes.String().deserializer(), SerdesFactory.greetingSerdesGenerics().deserializer());
+    inputTopic =
+        topologyTestDriver.createInputTopic(
+            GreetingsTopology.GREETINGS,
+            Serdes.String().serializer(),
+            SerdesFactory.greetingSerdesGenerics().serializer());
+    outputTopic =
+        topologyTestDriver.createOutputTopic(
+            GreetingsTopology.GREETINGS_UPPERCASE,
+            Serdes.String().deserializer(),
+            SerdesFactory.greetingSerdesGenerics().deserializer());
   }
 
   @AfterEach
@@ -54,7 +61,6 @@ public class GreetingsTopologyTest {
     assertEquals("GM", outputKeyValue.key);
     assertEquals("GOOD MORNING", outputKeyValue.value.getMessage());
     assertNotNull(outputKeyValue.value.getTimeStamp());
-
   }
 
   @Test
@@ -83,7 +89,6 @@ public class GreetingsTopologyTest {
     assertEquals("GN", output2.key);
     assertEquals("GOOD NIGHT", output2.value.getMessage());
     assertNotNull(output2.value.getTimeStamp());
-
   }
 
   @Test
@@ -98,7 +103,5 @@ public class GreetingsTopologyTest {
     // Then
     var count = outputTopic.getQueueSize();
     assertEquals(0, count);
-
   }
-
 }
