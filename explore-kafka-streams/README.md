@@ -116,6 +116,11 @@ kafka-topics --bootstrap-server localhost:9092 --delete --topic greetings_spanis
 kafka-topics --bootstrap-server localhost:9092 --delete --topic greetings_uppercase
 ```
 
+## Junit
+
+```
+./gradlew :orders-kafka-streams-app:test --tests com.learnkafkastreams.topology.GreetingsTopologyTest --rerun-tasks --info
+```
 
 ## KafkaStreams using SpringBoot
 
