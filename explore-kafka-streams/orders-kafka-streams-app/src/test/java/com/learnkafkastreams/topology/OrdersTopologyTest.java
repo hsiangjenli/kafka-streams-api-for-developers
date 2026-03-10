@@ -8,6 +8,7 @@ import static com.learnkafkastreams.topology.OrdersTopology.RESTAURANT_ORDERS_CO
 import static com.learnkafkastreams.topology.OrdersTopology.RESTAURANT_ORDERS_REVENUE;
 import static com.learnkafkastreams.topology.OrdersTopology.RESTAURANT_ORDERS_REVENUE_WINDOWS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.learnkafkastreams.domain.Order;
 import com.learnkafkastreams.domain.OrderLineItem;
 import com.learnkafkastreams.domain.OrderType;
@@ -60,9 +61,7 @@ class OrdersTopologyTest {
     assertEquals(1, generalOrderCount);
     var restaurantOrderCount = restaurantOrderCountStore.get("store_1234");
     assertEquals(1, restaurantOrderCount);
-
   }
-
 
   @Test
   void orderRevenue() {
@@ -80,7 +79,6 @@ class OrdersTopologyTest {
     var restaurantOrderData = restaurantOrderRevenueStore.get("store_1234");
     assertEquals(1, restaurantOrderData.runnuingOrderCount());
     assertEquals(new BigDecimal("15.00"), restaurantOrderData.runningRevenue());
-
   }
 
   @Test
@@ -100,7 +98,6 @@ class OrdersTopologyTest {
     var restaurantOrderData = restaurantOrderRevenueStore.get("store_1234");
     assertEquals(2, restaurantOrderData.runnuingOrderCount());
     assertEquals(new BigDecimal("30.00"), restaurantOrderData.runningRevenue());
-
   }
 
   @Test
@@ -115,7 +112,6 @@ class OrdersTopologyTest {
         topologyTestDriver.getWindowStore(RESTAURANT_ORDERS_REVENUE_WINDOWS);
 
     generalOrderRevenueWindowsStore.all().forEachRemaining(windowedTotalRevenue -> {
-
       var startTime = windowedTotalRevenue.key.window().startTime();
       var endTime = windowedTotalRevenue.key.window().endTime();
 
@@ -134,11 +130,9 @@ class OrdersTopologyTest {
           .equals(exceptedStartTime);
       assert LocalDateTime.ofInstant(endTime, ZoneId.of(ZoneId.SHORT_IDS.get("CST")))
           .equals(exceptedEndTime);
-
     });
 
     restaurantOrderRevenueWindowsStore.all().forEachRemaining(windowedTotalRevenue -> {
-
       var startTime = windowedTotalRevenue.key.window().startTime();
       var endTime = windowedTotalRevenue.key.window().endTime();
 
@@ -153,9 +147,7 @@ class OrdersTopologyTest {
           .equals(exceptedStartTime);
       assert LocalDateTime.ofInstant(endTime, ZoneId.of(ZoneId.SHORT_IDS.get("CST")))
           .equals(exceptedEndTime);
-
     });
-
   }
 
   static List<KeyValue<String, Order>> orders() {
@@ -190,4 +182,5 @@ class OrdersTopologyTest {
 
     orderInputTopic.pipeKeyValueList(orders(), start, advanceBy);
   }
+
 }

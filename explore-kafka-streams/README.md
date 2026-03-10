@@ -120,6 +120,7 @@ kafka-topics --bootstrap-server localhost:9092 --delete --topic greetings_upperc
 
 ```
 ./gradlew :orders-kafka-streams-app:test --tests com.learnkafkastreams.topology.GreetingsTopologyTest --rerun-tasks --info
+./gradlew :greeting-streams:test --tests com.learnkafkastreams.topology.ExploreKTableTopologyTest --rerun-tasks --info
 ```
 
 ## KafkaStreams using SpringBoot
