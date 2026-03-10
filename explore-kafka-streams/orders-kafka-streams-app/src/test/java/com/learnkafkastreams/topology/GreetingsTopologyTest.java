@@ -86,4 +86,19 @@ public class GreetingsTopologyTest {
 
   }
 
+  @Test
+  void buildTopology_error() {
+
+    // Given
+    inputTopic.pipeInput("GM", new Greeting("Transient Error", LocalDateTime.now()));
+
+    // When
+    // Pass
+
+    // Then
+    var count = outputTopic.getQueueSize();
+    assertEquals(0, count);
+
+  }
+
 }
