@@ -14,9 +14,8 @@ public class OrderTimeStampExtractor implements TimestampExtractor {
     if (orderRecord != null && orderRecord.orderedDateTime() != null) {
       var timeStamp = orderRecord.orderedDateTime();
       log.info("TimeStamp in extractor : {} ", timeStamp);
-      var instant = timeStamp.toInstant(ZoneOffset.ofHours(-6)).toEpochMilli();
-      ;
-      // var instant =  timeStamp.toInstant(ZoneOffset.UTC).toEpochMilli();
+      // Use UTC for consistent timezone handling across all environments
+      var instant = timeStamp.toInstant(ZoneOffset.UTC).toEpochMilli();
       log.info("instant in extractor : {} ", instant);
       return instant;
     }
