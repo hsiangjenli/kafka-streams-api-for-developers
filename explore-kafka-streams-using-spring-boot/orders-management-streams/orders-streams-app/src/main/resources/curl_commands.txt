@@ -117,7 +117,11 @@ Other
 ==
 
 ```
- ./gradlew clean build -x test              
+./gradlew spotlessApply clean build -x test              
 java -jar orders-streams-app/build/libs/orders-streams-app-0.0.1-SNAPSHOT.jar
 java -jar -Dserver.port=8082 orders-streams-app/build/libs/orders-streams-app-0.0.1-SNAPSHOT.jar
+```
+
+```
+curl -i http://localhost:8080/v1/metadata/all
 ```
