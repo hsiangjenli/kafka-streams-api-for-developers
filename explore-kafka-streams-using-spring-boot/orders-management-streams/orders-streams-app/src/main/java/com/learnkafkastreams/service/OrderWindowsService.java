@@ -31,89 +31,96 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class OrderWindowsService {
 
-    @Autowired
-    private OrderStoreService orderStoreService;
+  @Autowired private OrderStoreService orderStoreService;
 
-    public List<OrdersCountPerStoreByWindowsDTO> getOrderCountWindowsByType(String orderType) {
-        var countWindowsStore = getCountWindowsStore(orderType);
-        var orderTypeEnum = mapOrderType(orderType);
-        var countWindowsIterator = countWindowsStore.all();
+  public List<OrdersCountPerStoreByWindowsDTO> getOrderCountWindowsByType(String orderType) {
+    var countWindowsStore = getCountWindowsStore(orderType);
+    var orderTypeEnum = mapOrderType(orderType);
+    var countWindowsIterator = countWindowsStore.all();
 
-        return mapToOrderCountPerStoreByWindowsDTO(orderTypeEnum, countWindowsIterator);
-    }
+    return mapToOrderCountPerStoreByWindowsDTO(orderTypeEnum, countWindowsIterator);
+  }
 
-    private List<OrdersCountPerStoreByWindowsDTO> mapToOrderCountPerStoreByWindowsDTO(
-            OrderType orderTypeEnum,
-            KeyValueIterator<Windowed<String>, Long> countWindowsIterator) {
-        var spliterator = Spliterators.spliteratorUnknownSize(countWindowsIterator, 0);
-        return StreamSupport.stream(spliterator, false)
-                .map(keyValue -> new OrdersCountPerStoreByWindowsDTO(keyValue.key.key(),
-                        keyValue.value, orderTypeEnum,
-                        LocalDateTime.ofInstant(keyValue.key.window().startTime(), ZoneOffset.UTC),
-                        LocalDateTime.ofInstant(keyValue.key.window().endTime(), ZoneOffset.UTC)))
-                .collect(Collectors.toList());
-    }
+  private List<OrdersCountPerStoreByWindowsDTO> mapToOrderCountPerStoreByWindowsDTO(
+      OrderType orderTypeEnum, KeyValueIterator<Windowed<String>, Long> countWindowsIterator) {
+    var spliterator = Spliterators.spliteratorUnknownSize(countWindowsIterator, 0);
+    return StreamSupport.stream(spliterator, false)
+        .map(
+            keyValue ->
+                new OrdersCountPerStoreByWindowsDTO(
+                    keyValue.key.key(),
+                    keyValue.value,
+                    orderTypeEnum,
+                    LocalDateTime.ofInstant(keyValue.key.window().startTime(), ZoneOffset.UTC),
+                    LocalDateTime.ofInstant(keyValue.key.window().endTime(), ZoneOffset.UTC)))
+        .collect(Collectors.toList());
+  }
 
-    private ReadOnlyWindowStore<String, Long> getCountWindowsStore(String orderType) {
+  private ReadOnlyWindowStore<String, Long> getCountWindowsStore(String orderType) {
 
-        return switch (orderType) {
-            case GENERAL_ORDERS -> orderStoreService
-                    .orderWindowsCountStore(GENERAL_ORDERS_COUNT_WINDOWS);
-            case RESTAURANT_ORDERS -> orderStoreService
-                    .orderWindowsCountStore(RESTAURANT_ORDERS_COUNT_WINDOWS);
-            default -> throw new IllegalStateException();
-        };
-    }
+    return switch (orderType) {
+      case GENERAL_ORDERS -> orderStoreService.orderWindowsCountStore(GENERAL_ORDERS_COUNT_WINDOWS);
+      case RESTAURANT_ORDERS ->
+          orderStoreService.orderWindowsCountStore(RESTAURANT_ORDERS_COUNT_WINDOWS);
+      default -> throw new IllegalStateException();
+    };
+  }
 
-    public List<OrdersCountPerStoreByWindowsDTO> getAllOrderCountWindows() {
+  public List<OrdersCountPerStoreByWindowsDTO> getAllOrderCountWindows() {
 
-        var generalOrderCountWindows = getOrderCountWindowsByType(GENERAL_ORDERS);
-        var restaurantOrderCountWindows = getOrderCountWindowsByType(RESTAURANT_ORDERS);
-        return Stream.of(generalOrderCountWindows, restaurantOrderCountWindows)
-                .flatMap(Collection::stream).collect(Collectors.toList());
-    }
+    var generalOrderCountWindows = getOrderCountWindowsByType(GENERAL_ORDERS);
+    var restaurantOrderCountWindows = getOrderCountWindowsByType(RESTAURANT_ORDERS);
+    return Stream.of(generalOrderCountWindows, restaurantOrderCountWindows)
+        .flatMap(Collection::stream)
+        .collect(Collectors.toList());
+  }
 
-    public List<OrdersCountPerStoreByWindowsDTO> getAllOrderCountWindows(LocalDateTime fromTime,
-            LocalDateTime toTime) {
-        var fromTimeInstant = fromTime.toInstant(ZoneOffset.UTC);
-        var toTimeInstant = toTime.toInstant(ZoneOffset.UTC);
+  public List<OrdersCountPerStoreByWindowsDTO> getAllOrderCountWindows(
+      LocalDateTime fromTime, LocalDateTime toTime) {
+    var fromTimeInstant = fromTime.toInstant(ZoneOffset.UTC);
+    var toTimeInstant = toTime.toInstant(ZoneOffset.UTC);
 
-        var generalOrderCountWindows =
-                getCountWindowsStore(GENERAL_ORDERS).fetchAll(fromTimeInstant, toTimeInstant);
-        var restaurantOrderCountWindows =
-                getCountWindowsStore(RESTAURANT_ORDERS).fetchAll(fromTimeInstant, toTimeInstant);
+    var generalOrderCountWindows =
+        getCountWindowsStore(GENERAL_ORDERS).fetchAll(fromTimeInstant, toTimeInstant);
+    var restaurantOrderCountWindows =
+        getCountWindowsStore(RESTAURANT_ORDERS).fetchAll(fromTimeInstant, toTimeInstant);
 
-        var generalOrderCountWindowsDTO =
-                mapToOrderCountPerStoreByWindowsDTO(OrderType.GENERAL, generalOrderCountWindows);
-        var restaurantOrderCountWindowsDTO = mapToOrderCountPerStoreByWindowsDTO(
-                OrderType.RESTAURANT, restaurantOrderCountWindows);
+    var generalOrderCountWindowsDTO =
+        mapToOrderCountPerStoreByWindowsDTO(OrderType.GENERAL, generalOrderCountWindows);
+    var restaurantOrderCountWindowsDTO =
+        mapToOrderCountPerStoreByWindowsDTO(OrderType.RESTAURANT, restaurantOrderCountWindows);
 
-        return Stream.of(generalOrderCountWindowsDTO, restaurantOrderCountWindowsDTO)
-                .flatMap(Collection::stream).collect(Collectors.toList());
-    }
+    return Stream.of(generalOrderCountWindowsDTO, restaurantOrderCountWindowsDTO)
+        .flatMap(Collection::stream)
+        .collect(Collectors.toList());
+  }
 
-    public List<OrdersRevenuePerStoreByWindowsDTO> getOrderRevenueWindowsByType(String orderType) {
-        var revenueWindowsStore = getRevenueWindowsStore(orderType);
-        var orderTypeEnum = mapOrderType(orderType);
-        var revenueWindowsIterator = revenueWindowsStore.all();
+  public List<OrdersRevenuePerStoreByWindowsDTO> getOrderRevenueWindowsByType(String orderType) {
+    var revenueWindowsStore = getRevenueWindowsStore(orderType);
+    var orderTypeEnum = mapOrderType(orderType);
+    var revenueWindowsIterator = revenueWindowsStore.all();
 
-        var spliterator = Spliterators.spliteratorUnknownSize(revenueWindowsIterator, 0);
+    var spliterator = Spliterators.spliteratorUnknownSize(revenueWindowsIterator, 0);
 
-        return StreamSupport.stream(spliterator, false)
-                .map(keyValue -> new OrdersRevenuePerStoreByWindowsDTO(keyValue.key.key(),
-                        keyValue.value, orderTypeEnum,
-                        LocalDateTime.ofInstant(keyValue.key.window().startTime(), ZoneOffset.UTC),
-                        LocalDateTime.ofInstant(keyValue.key.window().endTime(), ZoneOffset.UTC)))
-                .collect(Collectors.toList());
-    }
+    return StreamSupport.stream(spliterator, false)
+        .map(
+            keyValue ->
+                new OrdersRevenuePerStoreByWindowsDTO(
+                    keyValue.key.key(),
+                    keyValue.value,
+                    orderTypeEnum,
+                    LocalDateTime.ofInstant(keyValue.key.window().startTime(), ZoneOffset.UTC),
+                    LocalDateTime.ofInstant(keyValue.key.window().endTime(), ZoneOffset.UTC)))
+        .collect(Collectors.toList());
+  }
 
-    public ReadOnlyWindowStore<String, TotalRevenue> getRevenueWindowsStore(String orderType) {
-        return switch (orderType) {
-            case GENERAL_ORDERS -> orderStoreService
-                    .orderWindowsRevenueStore(GENERAL_ORDERS_REVENUE_WINDOWS);
-            case RESTAURANT_ORDERS -> orderStoreService
-                    .orderWindowsRevenueStore(RESTAURANT_ORDERS_REVENUE_WINDOWS);
-            default -> throw new IllegalStateException();
-        };
-    }
+  public ReadOnlyWindowStore<String, TotalRevenue> getRevenueWindowsStore(String orderType) {
+    return switch (orderType) {
+      case GENERAL_ORDERS ->
+          orderStoreService.orderWindowsRevenueStore(GENERAL_ORDERS_REVENUE_WINDOWS);
+      case RESTAURANT_ORDERS ->
+          orderStoreService.orderWindowsRevenueStore(RESTAURANT_ORDERS_REVENUE_WINDOWS);
+      default -> throw new IllegalStateException();
+    };
+  }
 }
