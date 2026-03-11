@@ -13,16 +13,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-
 @RestController
 @RequestMapping("/v1/orders")
 public class OrderController {
 
-  @Autowired
-  private OrderService orderService;
+  @Autowired private OrderService orderService;
 
   @GetMapping("/count/{order_type}")
-  public ResponseEntity<?> getOrdersCount(@PathVariable("order_type") String orderType,
+  public ResponseEntity<?> getOrdersCount(
+      @PathVariable("order_type") String orderType,
       @RequestParam(name = "location_id", required = false) String locationId) {
 
     if (StringUtils.isNotEmpty(locationId)) {
@@ -32,18 +31,14 @@ public class OrderController {
     return ResponseEntity.ok(orderService.getOrdersCount(orderType));
   }
 
-
   @GetMapping("/count")
   public ResponseEntity<List<AllOrdersCountPerStoreDTO>> getOrdersCount() {
     return ResponseEntity.ok(orderService.getAllOrderCount());
   }
-
 
   @GetMapping("/revenue/{order_type}")
   public ResponseEntity<List<OrderRevenueDTO>> revenueByOrderType(
       @PathVariable("order_type") String orderType) {
     return ResponseEntity.ok(orderService.getRevenueByOrderType(orderType));
   }
-
-
 }

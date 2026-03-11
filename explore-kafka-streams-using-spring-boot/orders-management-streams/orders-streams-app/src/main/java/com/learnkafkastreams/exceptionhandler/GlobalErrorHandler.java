@@ -4,7 +4,6 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import lombok.var;
 
 @RestControllerAdvice
 public class GlobalErrorHandler {
@@ -17,5 +16,4 @@ public class GlobalErrorHandler {
     problemDetail.setProperty("additionalInfo", "Provide valid Order Type");
     return problemDetail;
   }
-
 }

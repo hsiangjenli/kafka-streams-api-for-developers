@@ -1,7 +1,10 @@
 package com.learnkafkastreams.topology;
 
 import static com.learnkafkastreams.topology.OrdersTopology.*;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.learnkafkastreams.domain.Order;
@@ -12,7 +15,6 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.KeyValue;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
@@ -25,28 +27,24 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
-import static org.hamcrest.Matchers.equalTo;
-import static java.util.concurrent.TimeUnit.SECONDS;
 
 @SpringBootTest
 @EmbeddedKafka(topics = {ORDERS, STORES})
 @TestPropertySource(
-    properties = {"spring.kafka.streams.bootstrap-servers=${spring.embedded.kafka.brokers}",
-        "spring.kafka.producer.bootstrap-servers=${spring.embedded.kafka.brokers}"})
+    properties = {
+      "spring.kafka.streams.bootstrap-servers=${spring.embedded.kafka.brokers}",
+      "spring.kafka.producer.bootstrap-servers=${spring.embedded.kafka.brokers}"
+    })
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class OrdersTopologyIntegrationTest {
 
-  @Autowired
-  KafkaTemplate<String, String> kafkaTemplate;
+  @Autowired KafkaTemplate<String, String> kafkaTemplate;
 
-  @Autowired
-  StreamsBuilderFactoryBean streamsBuilderFactoryBean;
+  @Autowired StreamsBuilderFactoryBean streamsBuilderFactoryBean;
 
-  @Autowired
-  ObjectMapper objectMapper;
+  @Autowired ObjectMapper objectMapper;
 
-  @Autowired
-  OrderService orderService;
+  @Autowired OrderService orderService;
 
   @BeforeEach
   void setUp() {
@@ -64,13 +62,15 @@ public class OrdersTopologyIntegrationTest {
 
     publishOrders();
 
-    Awaitility.await().atMost(10, SECONDS).pollDelay(Duration.ofSeconds(1)).ignoreExceptions()
+    Awaitility.await()
+        .atMost(10, SECONDS)
+        .pollDelay(Duration.ofSeconds(1))
+        .ignoreExceptions()
         .until(() -> orderService.getOrdersCount(GENERAL_ORDERS).size(), equalTo(1));
 
     var generalOrdersCount = orderService.getOrdersCount(GENERAL_ORDERS);
     assert generalOrdersCount.size() == 1;
     assertEquals(1, generalOrdersCount.get(0).orderCount());
-
   }
 
   @Test
@@ -78,24 +78,27 @@ public class OrdersTopologyIntegrationTest {
 
     publishOrders();
 
-    Awaitility.await().atMost(10, SECONDS).pollDelay(Duration.ofSeconds(1)).ignoreExceptions()
+    Awaitility.await()
+        .atMost(10, SECONDS)
+        .pollDelay(Duration.ofSeconds(1))
+        .ignoreExceptions()
         .until(() -> orderService.getOrdersCount(GENERAL_ORDERS).size(), equalTo(1));
 
-    Awaitility.await().atMost(10, SECONDS).pollDelay(Duration.ofSeconds(1)).ignoreExceptions()
+    Awaitility.await()
+        .atMost(10, SECONDS)
+        .pollDelay(Duration.ofSeconds(1))
+        .ignoreExceptions()
         .until(() -> orderService.getOrdersCount(RESTAURANT_ORDERS).size(), equalTo(1));
 
     var generalOrdersRevenue = orderService.getRevenueByOrderType(GENERAL_ORDERS);
     var restaurantOrderRevenue = orderService.getRevenueByOrderType(RESTAURANT_ORDERS);
 
-    assertEquals(new BigDecimal("27.00"),
-        generalOrdersRevenue.get(0).totalRevenue().runningRevenue());
+    assertEquals(
+        new BigDecimal("27.00"), generalOrdersRevenue.get(0).totalRevenue().runningRevenue());
 
-    assertEquals(new BigDecimal("15.00"),
-        restaurantOrderRevenue.get(0).totalRevenue().runningRevenue());
-
+    assertEquals(
+        new BigDecimal("15.00"), restaurantOrderRevenue.get(0).totalRevenue().runningRevenue());
   }
-
-
 
   @Test
   void ordersRevenue_multiOrders() throws InterruptedException {
@@ -103,52 +106,73 @@ public class OrdersTopologyIntegrationTest {
     publishOrders();
     publishOrders();
 
-    Awaitility.await().atMost(10, SECONDS).pollDelay(Duration.ofSeconds(1)).ignoreExceptions()
+    Awaitility.await()
+        .atMost(10, SECONDS)
+        .pollDelay(Duration.ofSeconds(1))
+        .ignoreExceptions()
         .until(() -> orderService.getOrdersCount(GENERAL_ORDERS).size(), equalTo(1));
 
-    Awaitility.await().atMost(10, SECONDS).pollDelay(Duration.ofSeconds(1)).ignoreExceptions()
+    Awaitility.await()
+        .atMost(10, SECONDS)
+        .pollDelay(Duration.ofSeconds(1))
+        .ignoreExceptions()
         .until(() -> orderService.getOrdersCount(RESTAURANT_ORDERS).size(), equalTo(1));
 
     var generalOrdersRevenue = orderService.getRevenueByOrderType(GENERAL_ORDERS);
     var restaurantOrderRevenue = orderService.getRevenueByOrderType(RESTAURANT_ORDERS);
 
-    assertEquals(new BigDecimal("54.00"),
-        generalOrdersRevenue.get(0).totalRevenue().runningRevenue());
+    assertEquals(
+        new BigDecimal("54.00"), generalOrdersRevenue.get(0).totalRevenue().runningRevenue());
 
-    assertEquals(new BigDecimal("30.00"),
-        restaurantOrderRevenue.get(0).totalRevenue().runningRevenue());
-
+    assertEquals(
+        new BigDecimal("30.00"), restaurantOrderRevenue.get(0).totalRevenue().runningRevenue());
   }
 
   private void publishOrders() {
-    orders().forEach(order -> {
-      String orderJSON = null;
-      try {
-        orderJSON = objectMapper.writeValueAsString(order.value);
-      } catch (JsonProcessingException e) {
-        throw new RuntimeException(e);
-      }
-      kafkaTemplate.send(ORDERS, order.key, orderJSON);
-    });
+    orders()
+        .forEach(
+            order -> {
+              String orderJSON = null;
+              try {
+                orderJSON = objectMapper.writeValueAsString(order.value);
+              } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+              }
+              kafkaTemplate.send(ORDERS, order.key, orderJSON);
+            });
   }
 
   static List<KeyValue<String, Order>> orders() {
 
-    var orderItems = List.of(new OrderLineItem("Bananas", 2, new BigDecimal("2.00")),
-        new OrderLineItem("Iphone Charger", 1, new BigDecimal("25.00")));
+    var orderItems =
+        List.of(
+            new OrderLineItem("Bananas", 2, new BigDecimal("2.00")),
+            new OrderLineItem("Iphone Charger", 1, new BigDecimal("25.00")));
 
-    var orderItemsRestaurant = List.of(new OrderLineItem("Pizza", 2, new BigDecimal("12.00")),
-        new OrderLineItem("Coffee", 1, new BigDecimal("3.00")));
+    var orderItemsRestaurant =
+        List.of(
+            new OrderLineItem("Pizza", 2, new BigDecimal("12.00")),
+            new OrderLineItem("Coffee", 1, new BigDecimal("3.00")));
 
     var order1 =
-        new Order(12345, "store_1234", new BigDecimal("27.00"), OrderType.GENERAL, orderItems,
+        new Order(
+            12345,
+            "store_1234",
+            new BigDecimal("27.00"),
+            OrderType.GENERAL,
+            orderItems,
             // LocalDateTime.now()
             LocalDateTime.parse("2023-02-21T21:25:01"));
 
-    var order2 = new Order(54321, "store_1234", new BigDecimal("15.00"), OrderType.RESTAURANT,
-        orderItemsRestaurant,
-        // LocalDateTime.now()
-        LocalDateTime.parse("2023-02-21T21:25:01"));
+    var order2 =
+        new Order(
+            54321,
+            "store_1234",
+            new BigDecimal("15.00"),
+            OrderType.RESTAURANT,
+            orderItemsRestaurant,
+            // LocalDateTime.now()
+            LocalDateTime.parse("2023-02-21T21:25:01"));
     var keyValue1 = KeyValue.pair(order1.orderId().toString(), order1);
 
     var keyValue2 = KeyValue.pair(order2.orderId().toString(), order2);

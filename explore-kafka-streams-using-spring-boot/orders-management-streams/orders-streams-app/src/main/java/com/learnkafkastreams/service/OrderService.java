@@ -6,20 +6,19 @@ import static com.learnkafkastreams.topology.OrdersTopology.GENERAL_ORDERS_REVEN
 import static com.learnkafkastreams.topology.OrdersTopology.RESTAURANT_ORDERS;
 import static com.learnkafkastreams.topology.OrdersTopology.RESTAURANT_ORDERS_COUNT;
 import static com.learnkafkastreams.topology.OrdersTopology.RESTAURANT_ORDERS_REVENUE;
+
 import com.learnkafkastreams.domain.AllOrdersCountPerStoreDTO;
 import com.learnkafkastreams.domain.OrderCountPerStoreDTO;
 import com.learnkafkastreams.domain.OrderRevenueDTO;
 import com.learnkafkastreams.domain.OrderType;
 import com.learnkafkastreams.domain.TotalRevenue;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Spliterators;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +28,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class OrderService {
 
-  @Autowired
-  private OrderStoreService orderStoreService;
+  @Autowired private OrderStoreService orderStoreService;
 
   public List<OrderCountPerStoreDTO> getOrdersCount(String orderType) {
     var orderCountStore = getOrderStore(orderType);
@@ -61,18 +59,22 @@ public class OrderService {
 
   public List<AllOrdersCountPerStoreDTO> getAllOrderCount() {
     BiFunction<OrderCountPerStoreDTO, OrderType, AllOrdersCountPerStoreDTO> mapper =
-        (orderCountPerStoreDTO, orderType) -> new AllOrdersCountPerStoreDTO(
-            orderCountPerStoreDTO.locationId(), orderCountPerStoreDTO.orderCount(), orderType);
+        (orderCountPerStoreDTO, orderType) ->
+            new AllOrdersCountPerStoreDTO(
+                orderCountPerStoreDTO.locationId(), orderCountPerStoreDTO.orderCount(), orderType);
 
-    var generalOrdersCount = getOrdersCount(GENERAL_ORDERS).stream()
-        .map(orderCountPerStoreDTO -> mapper.apply(orderCountPerStoreDTO, OrderType.GENERAL))
-        .toList();
+    var generalOrdersCount =
+        getOrdersCount(GENERAL_ORDERS).stream()
+            .map(orderCountPerStoreDTO -> mapper.apply(orderCountPerStoreDTO, OrderType.GENERAL))
+            .toList();
 
-    var restaurantOrderCounts = getOrdersCount(RESTAURANT_ORDERS).stream()
-        .map(orderCountPerStoreDTO -> mapper.apply(orderCountPerStoreDTO, OrderType.RESTAURANT))
-        .toList();
+    var restaurantOrderCounts =
+        getOrdersCount(RESTAURANT_ORDERS).stream()
+            .map(orderCountPerStoreDTO -> mapper.apply(orderCountPerStoreDTO, OrderType.RESTAURANT))
+            .toList();
 
-    return Stream.of(generalOrdersCount, restaurantOrderCounts).flatMap(Collection::stream)
+    return Stream.of(generalOrdersCount, restaurantOrderCounts)
+        .flatMap(Collection::stream)
         .collect(Collectors.toList());
   }
 
@@ -86,7 +88,6 @@ public class OrderService {
     return StreamSupport.stream(spliterator, false)
         .map(keyValue -> new OrderRevenueDTO(keyValue.key, mapOrderType(orderType), keyValue.value))
         .collect(Collectors.toList());
-
   }
 
   public static OrderType mapOrderType(String orderType) {
@@ -104,5 +105,4 @@ public class OrderService {
       default -> throw new IllegalStateException();
     };
   }
-
 }
