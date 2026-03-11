@@ -23,6 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.config.StreamsBuilderFactoryBean;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.context.EmbeddedKafka;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import static org.hamcrest.Matchers.equalTo;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -32,6 +33,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 @TestPropertySource(
     properties = {"spring.kafka.streams.bootstrap-servers=${spring.embedded.kafka.brokers}",
         "spring.kafka.producer.bootstrap-servers=${spring.embedded.kafka.brokers}"})
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class OrdersTopologyIntegrationTest {
 
   @Autowired
@@ -46,6 +48,17 @@ public class OrdersTopologyIntegrationTest {
   @Autowired
   OrderService orderService;
 
+  @BeforeEach
+  void setUp() {
+    streamsBuilderFactoryBean.start();
+  }
+
+  @AfterEach
+  void tearDown() {
+    streamsBuilderFactoryBean.getKafkaStreams().close();
+    streamsBuilderFactoryBean.getKafkaStreams().cleanUp();
+  }
+
   @Test
   void ordersCount() throws InterruptedException {
 
@@ -58,6 +71,52 @@ public class OrdersTopologyIntegrationTest {
     assert generalOrdersCount.size() == 1;
     assertEquals(1, generalOrdersCount.get(0).orderCount());
 
+  }
+
+  @Test
+  void ordersRevenue() throws InterruptedException {
+
+    publishOrders();
+
+    Awaitility.await().atMost(10, SECONDS).pollDelay(Duration.ofSeconds(1)).ignoreExceptions()
+        .until(() -> orderService.getOrdersCount(GENERAL_ORDERS).size(), equalTo(1));
+
+    Awaitility.await().atMost(10, SECONDS).pollDelay(Duration.ofSeconds(1)).ignoreExceptions()
+        .until(() -> orderService.getOrdersCount(RESTAURANT_ORDERS).size(), equalTo(1));
+
+    var generalOrdersRevenue = orderService.getRevenueByOrderType(GENERAL_ORDERS);
+    var restaurantOrderRevenue = orderService.getRevenueByOrderType(RESTAURANT_ORDERS);
+
+    assertEquals(new BigDecimal("27.00"),
+        generalOrdersRevenue.get(0).totalRevenue().runningRevenue());
+
+    assertEquals(new BigDecimal("15.00"),
+        restaurantOrderRevenue.get(0).totalRevenue().runningRevenue());
+
+  }
+
+
+
+  @Test
+  void ordersRevenue_multiOrders() throws InterruptedException {
+
+    publishOrders();
+    publishOrders();
+
+    Awaitility.await().atMost(10, SECONDS).pollDelay(Duration.ofSeconds(1)).ignoreExceptions()
+        .until(() -> orderService.getOrdersCount(GENERAL_ORDERS).size(), equalTo(1));
+
+    Awaitility.await().atMost(10, SECONDS).pollDelay(Duration.ofSeconds(1)).ignoreExceptions()
+        .until(() -> orderService.getOrdersCount(RESTAURANT_ORDERS).size(), equalTo(1));
+
+    var generalOrdersRevenue = orderService.getRevenueByOrderType(GENERAL_ORDERS);
+    var restaurantOrderRevenue = orderService.getRevenueByOrderType(RESTAURANT_ORDERS);
+
+    assertEquals(new BigDecimal("54.00"),
+        generalOrdersRevenue.get(0).totalRevenue().runningRevenue());
+
+    assertEquals(new BigDecimal("30.00"),
+        restaurantOrderRevenue.get(0).totalRevenue().runningRevenue());
 
   }
 
