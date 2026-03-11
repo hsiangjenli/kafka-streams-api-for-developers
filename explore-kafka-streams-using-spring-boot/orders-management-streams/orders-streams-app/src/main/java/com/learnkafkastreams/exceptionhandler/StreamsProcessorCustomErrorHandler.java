@@ -11,7 +11,7 @@ public class StreamsProcessorCustomErrorHandler implements StreamsUncaughtExcept
     log.error("Exception in the Application : {} ", exception.getMessage(), exception);
     if (exception instanceof StreamsException) {
       var cause = exception.getCause();
-      if (cause.getMessage().equals("Transient Error")) {
+      if (cause != null && "Transient Error".equals(cause.getMessage())) {
         // return StreamThreadExceptionResponse.REPLACE_THREAD;
         return StreamThreadExceptionResponse.SHUTDOWN_CLIENT;
       }
