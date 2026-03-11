@@ -26,3 +26,5 @@ spring:
         serialization:
           exception:
             handler: 'com.learnkafkastreams.exceptionhandler.StreamsSerializationExceptionHandler'
+server:
+  port: 8080

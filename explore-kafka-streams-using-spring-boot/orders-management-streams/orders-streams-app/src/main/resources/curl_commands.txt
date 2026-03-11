@@ -110,3 +110,14 @@ curl -i http://localhost:8080/v1/orders/windows/revenue/general_orders
 
 Sample JSON: 06-orders-revenue-windows.json
 DTO : OrdersRevenuePerStoreByWindows
+
+
+==
+Other
+==
+
+```
+ ./gradlew clean build -x test              
+java -jar orders-streams-app/build/libs/orders-streams-app-0.0.1-SNAPSHOT.jar
+java -jar -Dserver.port=8082 orders-streams-app/build/libs/orders-streams-app-0.0.1-SNAPSHOT.jar
+```

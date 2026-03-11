@@ -2,11 +2,14 @@ package com.learnkafkastreams.config;
 
 import com.learnkafkastreams.exceptionhandler.StreamsProcessorCustomErrorHandler;
 import com.learnkafkastreams.topology.OrdersTopology;
+import java.net.Inet4Address;
+import java.net.UnknownHostException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.streams.StreamsConfig;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,12 +27,19 @@ import org.springframework.kafka.streams.RecoveringDeserializationExceptionHandl
 public class OrdersStreamsConfiguration {
   // KafkaStreamsDefaultConfiguration -> Class Responsible for configuring the KafkaStreams in
   // SpringBoot
+
+  @Value("${server.port}")
+  private Integer port;
+
+  @Value("${spring.application.name}")
+  private String applicationName;
+
   @Autowired KafkaProperties kafkaProperties;
 
   @Autowired KafkaTemplate<String, String> kafkaTemplate;
 
   @Bean(name = KafkaStreamsDefaultConfiguration.DEFAULT_STREAMS_CONFIG_BEAN_NAME)
-  public KafkaStreamsConfiguration kStreamConfig() {
+  public KafkaStreamsConfiguration kStreamConfig() throws UnknownHostException {
 
     var streamProperties = kafkaProperties.buildStreamsProperties();
 
@@ -39,6 +49,12 @@ public class OrdersStreamsConfiguration {
     streamProperties.put(
         RecoveringDeserializationExceptionHandler.KSTREAM_DESERIALIZATION_RECOVERER,
         consumerRecordRecoverer);
+    streamProperties.put(
+        StreamsConfig.APPLICATION_SERVER_CONFIG,
+        Inet4Address.getLocalHost().getHostAddress() + ":" + port);
+
+    streamProperties.put(
+        StreamsConfig.STATE_DIR_CONFIG, String.format("%s%s", applicationName, port));
 
     return new KafkaStreamsConfiguration(streamProperties);
   }

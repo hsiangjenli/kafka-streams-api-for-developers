@@ -33,3 +33,6 @@ out/
 .vscode/
 
 .DS_Store
+explore-kafka-streams-using-spring-boot/orders-management-streams/orders-kafka-streams8080
+explore-kafka-streams-using-spring-boot/orders-management-streams/orders-kafka-streams8081
+explore-kafka-streams-using-spring-boot/orders-management-streams/orders-kafka-streams8082
