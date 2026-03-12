@@ -22,13 +22,18 @@ public class OrderController {
   @GetMapping("/count/{order_type}")
   public ResponseEntity<?> getOrdersCount(
       @PathVariable("order_type") String orderType,
-      @RequestParam(name = "location_id", required = false) String locationId) {
+      @RequestParam(name = "location_id", required = false) String locationId,
+      @RequestParam(name = "query_other_hosts", required = false) String queryOtherHosts) {
+
+    if (!StringUtils.isNotEmpty(queryOtherHosts)) {
+      queryOtherHosts = "true";
+    }
 
     if (StringUtils.isNotEmpty(locationId)) {
       return ResponseEntity.ok(orderService.getOrdersCountByLocationId(orderType, locationId));
     }
 
-    return ResponseEntity.ok(orderService.getOrdersCount(orderType));
+    return ResponseEntity.ok(orderService.getOrdersCount(orderType, queryOtherHosts));
   }
 
   @GetMapping("/count")

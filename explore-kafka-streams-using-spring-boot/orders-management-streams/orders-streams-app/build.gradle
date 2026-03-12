@@ -38,6 +38,11 @@ dependencies {
     testImplementation 'org.apache.kafka:kafka-streams-test-utils:3.3.1'
     testImplementation 'org.awaitility:awaitility:4.2.0'
 
+    // Source: https://mvnrepository.com/artifact/org.springframework/spring-webflux
+    implementation 'org.springframework:spring-webflux'
+    // Source: https://mvnrepository.com/artifact/io.projectreactor.netty/reactor-netty
+    implementation 'io.projectreactor.netty:reactor-netty'
+
 }
 
 tasks.named('test') {
