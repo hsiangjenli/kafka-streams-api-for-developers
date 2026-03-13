@@ -137,3 +137,8 @@ curl -i http://localhost:8080/v1/orders/count/general_orders?location_id=store_4
 curl -i http://localhost:8082/v1/orders/count/general_orders?location_id=store_1234
 curl -i http://localhost:8082/v1/orders/count/general_orders?location_id=store_4567
 ```
+
+```
+curl -i http://localhost:8080/v1/orders/count
+curl -i http://localhost:8082/v1/orders/count
+```

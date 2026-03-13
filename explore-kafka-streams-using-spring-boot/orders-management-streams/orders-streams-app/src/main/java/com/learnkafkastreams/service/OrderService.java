@@ -146,12 +146,12 @@ public class OrderService {
                 orderCountPerStoreDTO.locationId(), orderCountPerStoreDTO.orderCount(), orderType);
 
     var generalOrdersCount =
-        getOrdersCount(GENERAL_ORDERS, "false").stream()
+        getOrdersCount(GENERAL_ORDERS, "true").stream()
             .map(orderCountPerStoreDTO -> mapper.apply(orderCountPerStoreDTO, OrderType.GENERAL))
             .toList();
 
     var restaurantOrderCounts =
-        getOrdersCount(RESTAURANT_ORDERS, "false").stream()
+        getOrdersCount(RESTAURANT_ORDERS, "true").stream()
             .map(orderCountPerStoreDTO -> mapper.apply(orderCountPerStoreDTO, OrderType.RESTAURANT))
             .toList();
 
