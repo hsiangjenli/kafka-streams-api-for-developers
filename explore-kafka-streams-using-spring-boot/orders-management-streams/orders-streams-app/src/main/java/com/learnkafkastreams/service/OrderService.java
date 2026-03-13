@@ -105,13 +105,38 @@ public class OrderService {
   }
 
   public OrderCountPerStoreDTO getOrdersCountByLocationId(String orderType, String location_id) {
-    var orderCountStore = getOrderStore(orderType);
-    var orderCount = orderCountStore.get(location_id);
-    if (orderCount != null) {
-      return new OrderCountPerStoreDTO(location_id, orderCount);
+
+    var storeName = mapOrderCountStoreName(orderType);
+    var hostMetaData = metaDataService.getStreamsMetaData(storeName, location_id);
+    log.info("host metadata : {}", hostMetaData);
+
+    if (hostMetaData != null) {
+
+      if (hostMetaData.port() == port) {
+        log.info("Fetching data from current instance");
+        var orderCountStore = getOrderStore(orderType);
+        var orderCount = orderCountStore.get(location_id);
+        return new OrderCountPerStoreDTO(location_id, orderCount);
+      } else {
+        // remote instance
+        // build a rest client
+        log.info("Fetching data from remote instance");
+        var orderCountPerStoreDTO =
+            ordersServiceClient.retrieveOrdersCountByOrderTypeAndLocationId(
+                new HostInfoDTO(hostMetaData.host(), hostMetaData.port()), orderType, location_id);
+        return orderCountPerStoreDTO;
+      }
     }
 
     return null;
+  }
+
+  private String mapOrderCountStoreName(String orderType) {
+    return switch (orderType) {
+      case GENERAL_ORDERS -> GENERAL_ORDERS_COUNT;
+      case RESTAURANT_ORDERS -> RESTAURANT_ORDERS_COUNT;
+      default -> throw new IllegalStateException("Not a valid Option");
+    };
   }
 
   public List<AllOrdersCountPerStoreDTO> getAllOrderCount() {

@@ -32,4 +32,18 @@ public class OrdersServiceClient {
         .collectList()
         .block();
   }
+
+  public OrderCountPerStoreDTO retrieveOrdersCountByOrderTypeAndLocationId(
+      HostInfoDTO hostInfoDTO, String orderType, String location_id) {
+    var basePath = "http://" + hostInfoDTO.host() + ":" + hostInfoDTO.port();
+    var url =
+        UriComponentsBuilder.fromHttpUrl(basePath)
+            .path("/v1/orders/count/{order_type}")
+            .queryParam("location_id", location_id)
+            .queryParam("query_other_hosts", "false")
+            .buildAndExpand(orderType)
+            .toString();
+
+    return webClient.get().uri(url).retrieve().bodyToMono(OrderCountPerStoreDTO.class).block();
+  }
 }
