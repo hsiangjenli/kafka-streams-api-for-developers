@@ -69,9 +69,9 @@ public class OrdersTopologyIntegrationTest {
         .atMost(10, SECONDS)
         .pollDelay(Duration.ofSeconds(1))
         .ignoreExceptions()
-        .until(() -> orderService.getOrdersCount(GENERAL_ORDERS).size(), equalTo(1));
+        .until(() -> orderService.getOrdersCount(GENERAL_ORDERS, "false").size(), equalTo(1));
 
-    var generalOrdersCount = orderService.getOrdersCount(GENERAL_ORDERS);
+    var generalOrdersCount = orderService.getOrdersCount(GENERAL_ORDERS, "false");
     assert generalOrdersCount.size() == 1;
     assertEquals(1, generalOrdersCount.get(0).orderCount());
   }
@@ -85,13 +85,13 @@ public class OrdersTopologyIntegrationTest {
         .atMost(10, SECONDS)
         .pollDelay(Duration.ofSeconds(1))
         .ignoreExceptions()
-        .until(() -> orderService.getOrdersCount(GENERAL_ORDERS).size(), equalTo(1));
+        .until(() -> orderService.getOrdersCount(GENERAL_ORDERS, "false").size(), equalTo(1));
 
     Awaitility.await()
         .atMost(10, SECONDS)
         .pollDelay(Duration.ofSeconds(1))
         .ignoreExceptions()
-        .until(() -> orderService.getOrdersCount(RESTAURANT_ORDERS).size(), equalTo(1));
+        .until(() -> orderService.getOrdersCount(RESTAURANT_ORDERS, "false").size(), equalTo(1));
 
     var generalOrdersRevenue = orderService.getRevenueByOrderType(GENERAL_ORDERS);
     var restaurantOrderRevenue = orderService.getRevenueByOrderType(RESTAURANT_ORDERS);
@@ -113,13 +113,13 @@ public class OrdersTopologyIntegrationTest {
         .atMost(10, SECONDS)
         .pollDelay(Duration.ofSeconds(1))
         .ignoreExceptions()
-        .until(() -> orderService.getOrdersCount(GENERAL_ORDERS).size(), equalTo(1));
+        .until(() -> orderService.getOrdersCount(GENERAL_ORDERS, "false").size(), equalTo(1));
 
     Awaitility.await()
         .atMost(10, SECONDS)
         .pollDelay(Duration.ofSeconds(1))
         .ignoreExceptions()
-        .until(() -> orderService.getOrdersCount(RESTAURANT_ORDERS).size(), equalTo(1));
+        .until(() -> orderService.getOrdersCount(RESTAURANT_ORDERS, "false").size(), equalTo(1));
 
     var generalOrdersRevenue = orderService.getRevenueByOrderType(GENERAL_ORDERS);
     var restaurantOrderRevenue = orderService.getRevenueByOrderType(RESTAURANT_ORDERS);
